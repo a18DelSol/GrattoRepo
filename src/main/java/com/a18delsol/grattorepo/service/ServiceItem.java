@@ -1,26 +1,32 @@
 package com.a18delsol.grattorepo.service;
 
 import com.a18delsol.grattorepo.model.ModelItem;
+import com.a18delsol.grattorepo.model.ModelItem;
 import com.a18delsol.grattorepo.repository.RepositoryItem;
+import com.a18delsol.grattorepo.repository.RepositoryItem;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.fge.jsonpatch.JsonPatch;
+import com.github.fge.jsonpatch.JsonPatchException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 public class ServiceItem {
-    public static ModelItem itemCreate(ModelItem modelItem, RepositoryItem repository) {
-        ModelItem modelItemSet = repository.findByItemName(modelItem.getItemName());
+    public static ModelItem itemCreate(ModelItem item, RepositoryItem repository) {
+        ModelItem modelItemFind = repository.findByItemName(item.getItemName());
 
-        if (modelItem.getItemName().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ModelItem name cannot be blank.");
-        } else if (modelItem.getItemPrice() < 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ModelItem price cannot be lower than zero.");
-        } else if (modelItem.getItemCount() < 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ModelItem count cannot be lower than zero.");
-        } else if (modelItemSet != null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ModelItem is already in use.");
+        if (modelItemFind != null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Name already in use.");
         }
 
-        repository.save(modelItem);
+        repository.save(item);
 
-        return modelItem;
+        return item;
+    }
+
+    public static ModelItem itemPatch(JsonPatch patch, ModelItem item) throws JsonPatchException, JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.treeToValue(patch.apply(objectMapper.convertValue(item, JsonNode.class)), ModelItem.class);
     }
 }

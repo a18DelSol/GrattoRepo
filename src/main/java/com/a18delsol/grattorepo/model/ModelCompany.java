@@ -15,7 +15,6 @@ public class ModelCompany {
     private Integer companyID;
 
     private String companyName;
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "companyItem", referencedColumnName = "itemID")
-    private ModelItem companyItem;
+
+    //@JsonIgnore -> prevenir recursion.
 }

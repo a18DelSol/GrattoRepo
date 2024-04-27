@@ -18,6 +18,8 @@ public class ModelItem {
     private Float itemPrice;
     private Integer itemCount;
     private Boolean itemRestrict;
-    @OneToOne(mappedBy = "companyItem")
+    @ManyToOne
+    private ModelCategory itemCategory;
+    @ManyToOne
     private ModelCompany itemCompany;
 }

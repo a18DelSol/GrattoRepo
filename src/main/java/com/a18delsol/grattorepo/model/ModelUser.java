@@ -1,6 +1,8 @@
 package com.a18delsol.grattorepo.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,4 +21,6 @@ public class ModelUser {
     private String userMail;
     private String userPass;
     private LocalDate userBirth;
+    @ManyToMany
+    private Set<ModelAttribute> userAttribute;
 }

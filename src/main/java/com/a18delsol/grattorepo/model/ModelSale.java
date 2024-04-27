@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 @Getter
 @Setter
 @Entity
@@ -14,6 +17,10 @@ public class ModelSale {
 
     private Float salePrice;
     private Integer saleCount;
-    private String saleDate;
-    private String saleTime;
+    private LocalDate saleDate;
+    private LocalTime saleTime;
+    @ManyToOne
+    private ModelUser saleUser;
+    @ManyToOne
+    private ModelItem saleItem;
 }

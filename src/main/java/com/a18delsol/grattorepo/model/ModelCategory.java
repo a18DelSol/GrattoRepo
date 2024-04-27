@@ -14,5 +14,6 @@ public class ModelCategory {
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
     private Integer categoryID;
+
     private String categoryName;
 }
