@@ -1,7 +1,9 @@
 package com.a18delsol.grattorepo.controller;
 
 import com.a18delsol.grattorepo.model.ModelUser;
+import com.a18delsol.grattorepo.repository.RepositoryItem;
 import com.a18delsol.grattorepo.repository.RepositorySale;
+import com.a18delsol.grattorepo.repository.RepositoryUser;
 import com.a18delsol.grattorepo.service.ServiceSale;
 import com.a18delsol.grattorepo.model.ModelSale;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -16,17 +18,18 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.ArrayList;
 
 @Controller
-@RequestMapping(path="/saleController")
+@RequestMapping(path="/sale")
 public class ControllerSale {
-    @Autowired
-    private RepositorySale repositorySale;
+    @Autowired private RepositorySale repositorySale;
+    @Autowired private RepositoryUser repositoryUser;
+    @Autowired private RepositoryItem repositoryItem;
 
-    @GetMapping(path="/sale")
+    @GetMapping(path="/")
     public @ResponseBody Iterable<ModelSale> saleGet () {
         return repositorySale.findAll();
     }
 
-    @GetMapping(path="/sale/{saleID}")
+    @GetMapping(path="/{saleID}")
     public @ResponseBody ModelSale saleGet(@PathVariable Integer saleID) {
         ModelSale modelSaleFind = repositorySale.findById(saleID).orElse(null);
 
@@ -37,12 +40,12 @@ public class ControllerSale {
         return modelSaleFind;
     }
 
-    @GetMapping(path="/sale/find")
+    @GetMapping(path="/find")
     public @ResponseBody Iterable<ModelSale> saleFind (@RequestParam Integer saleUserID) {
         return repositorySale.findSale(saleUserID);
     }
 
-    @PatchMapping(path="/sale/{saleID}", consumes = "application/json-patch+json")
+    @PatchMapping(path="/{saleID}", consumes = "application/json-patch+json")
     public @ResponseBody ModelSale salePatch(@PathVariable Integer saleID, @RequestBody JsonPatch patch) throws JsonPatchException, JsonProcessingException {
         ModelSale modelSaleFind = repositorySale.findById(saleID).orElse(null);
 
@@ -57,7 +60,7 @@ public class ControllerSale {
         return modelSaleFind;
     }
 
-    @PostMapping(path="/sale")
+    @PostMapping(path="/")
     public @ResponseBody ArrayList<ModelSale> salePost (@RequestBody ArrayList<ModelSale> modelSaleData) {
         ArrayList<ModelSale> returnList = new ArrayList<>();
 
@@ -70,8 +73,13 @@ public class ControllerSale {
 
     /* EXCLUSIVE */
 
-    @PostMapping(path="/sale/purchase")
-    public @ResponseBody ModelSale salePurchase (@RequestBody ModelSale modelSaleData) {
-        return ServiceSale.salePurchase(modelSaleData, repositorySale);
+    @GetMapping(path="/checkOut/{userID}")
+    public @ResponseBody ModelSale saleCheckOut (@PathVariable Integer userID) {
+        return ServiceSale.saleCheckOut(userID, repositorySale, repositoryUser);
+    }
+
+    @PostMapping(path="/purchase/{userID}")
+    public @ResponseBody ModelSale salePurchase (@PathVariable Integer userID, @RequestBody ModelSale sale) {
+        return ServiceSale.salePurchase(userID, repositorySale, repositoryUser, repositoryItem, sale);
     }
 }

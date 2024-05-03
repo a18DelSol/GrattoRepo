@@ -1,6 +1,5 @@
 package com.a18delsol.grattorepo.controller;
 
-import com.a18delsol.grattorepo.model.ModelCompany;
 import com.a18delsol.grattorepo.repository.RepositoryItem;
 import com.a18delsol.grattorepo.service.ServiceItem;
 import com.a18delsol.grattorepo.model.ModelItem;
@@ -17,17 +16,17 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 @Controller
-@RequestMapping(path="/itemController")
+@RequestMapping(path="/item")
 public class ControllerItem {
     @Autowired
     private RepositoryItem repositoryItem;
 
-    @GetMapping(path="/item")
+    @GetMapping(path="/")
     public @ResponseBody Iterable<ModelItem> itemGet () {
         return repositoryItem.findAll();
     }
 
-    @GetMapping(path="/item/{itemID}")
+    @GetMapping(path="/{itemID}")
     public @ResponseBody ModelItem itemGet(@PathVariable Integer itemID) {
         ModelItem modelItemFind = repositoryItem.findById(itemID).orElse(null);
 
@@ -38,7 +37,7 @@ public class ControllerItem {
         return modelItemFind;
     }
 
-    @GetMapping(path="/item/find")
+    @GetMapping(path="/find")
     public @ResponseBody Iterable<ModelItem> itemFind (
     @RequestParam Optional<String> itemName,
     @RequestParam Optional<Float> itemPriceMin,
@@ -49,7 +48,7 @@ public class ControllerItem {
         return repositoryItem.findItem(itemName, itemPriceMin, itemPriceMax, itemCountMin, itemCountMax, itemRestrict);
     }
 
-    @PatchMapping(path="/item/{itemID}", consumes = "application/json-patch+json")
+    @PatchMapping(path="/{itemID}", consumes = "application/json-patch+json")
     public @ResponseBody ModelItem itemPatch(@PathVariable Integer itemID, @RequestBody JsonPatch patch) throws JsonPatchException, JsonProcessingException {
         ModelItem modelItemFind = repositoryItem.findById(itemID).orElse(null);
 
@@ -64,7 +63,7 @@ public class ControllerItem {
         return modelItemFind;
     }
 
-    @PostMapping(path="/item")
+    @PostMapping(path="/")
     public @ResponseBody ArrayList<ModelItem> itemPost (@RequestBody ArrayList<ModelItem> modelItemData) {
         ArrayList<ModelItem> returnList = new ArrayList<>();
 

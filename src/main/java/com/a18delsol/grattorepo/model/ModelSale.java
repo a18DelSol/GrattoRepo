@@ -6,21 +6,26 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Set;
 
 @Getter
 @Setter
 @Entity
 public class ModelSale {
-    @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
-    private Integer saleID;
+    @Id @GeneratedValue(strategy= GenerationType.AUTO) private Integer saleID;
 
     private Float salePrice;
-    private Integer saleCount;
     private LocalDate saleDate;
     private LocalTime saleTime;
-    @ManyToOne
-    private ModelUser saleUser;
-    @ManyToOne
-    private ModelItem saleItem;
+    private Payment salePayment;
+    @ManyToOne  private ModelUser saleUser;
+    @ManyToMany private Set<ModelUserCart> saleCart;
+    @ManyToMany private Set<ModelDiscount> saleDiscountInclude;
+    @ManyToMany private Set<ModelDiscount> saleDiscountExclude;
+
+    public enum Payment {
+        CASH,
+        CREDIT,
+        DEBIT
+    }
 }

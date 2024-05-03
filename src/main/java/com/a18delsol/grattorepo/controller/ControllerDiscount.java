@@ -18,17 +18,17 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 @Controller
-@RequestMapping(path="/discountController")
+@RequestMapping(path="/discount")
 public class ControllerDiscount {
     @Autowired
     private RepositoryDiscount repositoryDiscount;
 
-    @GetMapping(path="/discount")
+    @GetMapping(path="/")
     public @ResponseBody Iterable<com.a18delsol.grattorepo.model.ModelDiscount> discountGet () {
         return repositoryDiscount.findAll();
     }
 
-    @GetMapping(path="/discount/{discountID}")
+    @GetMapping(path="/{discountID}")
     public @ResponseBody ModelDiscount discountGet(@PathVariable Integer discountID) {
         ModelDiscount modelDiscountFind = repositoryDiscount.findById(discountID).orElse(null);
 
@@ -39,13 +39,13 @@ public class ControllerDiscount {
         return modelDiscountFind;
     }
 
-    @GetMapping(path="/discount/find")
+    @GetMapping(path="/find")
     public @ResponseBody Iterable<ModelDiscount> discountFind (@RequestParam Optional<String> discountName,
         @RequestParam Optional<Float> discountPercentMin, @RequestParam Optional<Float> discountPercentMax) {
         return repositoryDiscount.findDiscount(discountName, discountPercentMin, discountPercentMax);
     }
 
-    @PatchMapping(path="/discount/{discountID}", consumes = "application/json-patch+json")
+    @PatchMapping(path="/{discountID}", consumes = "application/json-patch+json")
     public @ResponseBody com.a18delsol.grattorepo.model.ModelDiscount discountPatch(@PathVariable Integer discountID, @RequestBody JsonPatch patch) throws JsonPatchException, JsonProcessingException {
         com.a18delsol.grattorepo.model.ModelDiscount modelDiscountFind = repositoryDiscount.findById(discountID).orElse(null);
 
@@ -60,7 +60,7 @@ public class ControllerDiscount {
         return modelDiscountFind;
     }
 
-    @PostMapping(path="/discount")
+    @PostMapping(path="/")
     public @ResponseBody ArrayList<com.a18delsol.grattorepo.model.ModelDiscount> discountPost (@RequestBody ArrayList<com.a18delsol.grattorepo.model.ModelDiscount> modelDiscountData) {
         ArrayList<com.a18delsol.grattorepo.model.ModelDiscount> returnList = new ArrayList<>();
 
