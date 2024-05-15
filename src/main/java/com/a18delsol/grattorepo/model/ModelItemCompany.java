@@ -15,4 +15,5 @@ public class ModelItemCompany {
 
     private String companyName;
     @ManyToMany(mappedBy = "discountItemCompany") @JsonIgnore private Set<ModelDiscount> companyDiscount;
+    @OneToMany(mappedBy = "itemCompany") @JsonIgnore private Set<ModelItem> companyItem;
 }

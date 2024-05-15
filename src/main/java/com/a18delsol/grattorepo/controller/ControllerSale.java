@@ -1,6 +1,5 @@
 package com.a18delsol.grattorepo.controller;
 
-import com.a18delsol.grattorepo.model.ModelUser;
 import com.a18delsol.grattorepo.repository.RepositoryItem;
 import com.a18delsol.grattorepo.repository.RepositorySale;
 import com.a18delsol.grattorepo.repository.RepositoryUser;
@@ -11,6 +10,7 @@ import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -81,5 +81,10 @@ public class ControllerSale {
     @PostMapping(path="/purchase/{userID}")
     public @ResponseBody ModelSale salePurchase (@PathVariable Integer userID, @RequestBody ModelSale sale) {
         return ServiceSale.salePurchase(userID, repositorySale, repositoryUser, repositoryItem, sale);
+    }
+
+    @PostMapping(path="/refund/{saleID}")
+    public @ResponseBody ResponseEntity<String> salePurchase (@PathVariable Integer saleID) {
+        return ServiceSale.saleRefund(saleID, repositorySale, repositoryUser, repositoryItem);
     }
 }

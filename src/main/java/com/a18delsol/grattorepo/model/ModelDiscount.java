@@ -17,7 +17,7 @@ public class ModelDiscount {
     private LocalDate discountScheduleBegin;
     private LocalDate discountScheduleClose;
     private Float discountPercent;
-    @ManyToMany @JoinTable(name = "discount_user_attribute_join") private Set<ModelUserAttribute> discountUserAttribute;
-    @ManyToMany @JoinTable(name = "discount_item_attribute_join") private Set<ModelItemAttribute> discountItemAttribute;
-    @ManyToMany @JoinTable(name = "discount_item_company_join") private Set<ModelItemCompany> discountItemCompany;
+    @ManyToMany private Set<ModelUserAttribute> discountUserAttribute;
+    @ManyToMany private Set<ModelItemAttribute> discountItemAttribute;
+    @ManyToMany private Set<ModelItemCompany> discountItemCompany;
 }

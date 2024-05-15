@@ -18,6 +18,6 @@ public interface RepositoryUser extends CrudRepository<ModelUser, Integer> {
     + " WHERE (:userName is null OR user_name regexp :userName)"
     + " AND (:userPass is null OR user_pass regexp :userPass)"
     + " AND (:userMail is null OR user_mail regexp :userMail)"
-    + " AND (:userBirth is null OR user_birth = :user_birth)")
+    + " AND (:userBirth is null OR user_birth = :userBirth)")
     Iterable<ModelUser> findUser(Optional<String> userName, Optional<String> userPass, Optional<String> userMail, Optional<LocalDate> userBirth);
 }

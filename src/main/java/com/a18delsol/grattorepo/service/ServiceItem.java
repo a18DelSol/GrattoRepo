@@ -12,11 +12,13 @@ import com.github.fge.jsonpatch.JsonPatchException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Optional;
+
 public class ServiceItem {
     public static ModelItem itemCreate(ModelItem item, RepositoryItem repository) {
-        ModelItem modelItemFind = repository.findByItemName(item.getItemName());
+        Optional<ModelItem> modelItemFind = repository.findByItemName(item.getItemName());
 
-        if (modelItemFind != null) {
+        if (!modelItemFind.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Name already in use.");
         }
 

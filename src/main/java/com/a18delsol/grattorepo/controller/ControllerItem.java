@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
@@ -40,12 +41,13 @@ public class ControllerItem {
     @GetMapping(path="/find")
     public @ResponseBody Iterable<ModelItem> itemFind (
     @RequestParam Optional<String> itemName,
+    @RequestParam Optional<String> itemCode,
     @RequestParam Optional<Float> itemPriceMin,
     @RequestParam Optional<Float> itemPriceMax,
     @RequestParam Optional<Integer> itemCountMin,
     @RequestParam Optional<Integer> itemCountMax,
     @RequestParam Optional<Boolean> itemRestrict) {
-        return repositoryItem.findItem(itemName, itemPriceMin, itemPriceMax, itemCountMin, itemCountMax, itemRestrict);
+        return repositoryItem.findItem(itemName, itemCode, itemPriceMin, itemPriceMax, itemCountMin, itemCountMax, itemRestrict);
     }
 
     @PatchMapping(path="/{itemID}", consumes = "application/json-patch+json")
@@ -61,6 +63,13 @@ public class ControllerItem {
         repositoryItem.save(modelItemFind);
 
         return modelItemFind;
+    }
+
+    @PostMapping(path="/code/{itemCode}")
+    public @ResponseBody String itemCodePost (@PathVariable String itemCode) {
+        WebClient webClient = WebClient.builder().baseUrl("https://world.openfoodfacts.org/api/v2/product").build();
+
+        return webClient.get().uri("/{itemCode}", itemCode).exchange().block().bodyToMono(String.class).block();
     }
 
     @PostMapping(path="/")

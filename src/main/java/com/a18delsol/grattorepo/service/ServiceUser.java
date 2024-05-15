@@ -61,7 +61,13 @@ public class ServiceUser {
     public static ResponseEntity<ModelUser> userCartAttach(Integer userID, RepositoryUser repositoryUser, RepositoryItem repositoryItem,
         RepositoryUserCart repositoryUserCart, ModelUserCart cart) {
         Optional<ModelUser> modelUserFind = repositoryUser.findById(userID);
-        Optional<ModelItem> modelItemFind = repositoryItem.findById(cart.getCartItem().getItemID());
+        Optional<ModelItem> modelItemFind;
+
+        if (cart.getCartItem().getItemID() != null) {
+            modelItemFind = repositoryItem.findById(cart.getCartItem().getItemID());
+        } else {
+            modelItemFind = repositoryItem.findByItemCode(cart.getCartItem().getItemCode());
+        }
 
         if (modelUserFind.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found.");
@@ -80,6 +86,7 @@ public class ServiceUser {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User cannot add item to cart due to being underage.");
         }
 
+        cart.setCartItem(item);
         repositoryUserCart.save(cart);
 
         user.getUserCart().add(cart);

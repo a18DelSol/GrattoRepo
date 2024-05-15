@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
@@ -99,5 +100,27 @@ public class ServiceSale {
         repositoryUser.save(user);
 
         return sale;
+    }
+
+    public static ResponseEntity<String> saleRefund(Integer saleID, RepositorySale repositorySale, RepositoryUser repositoryUser,
+        RepositoryItem repositoryItem) {
+        Optional<ModelSale> saleFind = repositorySale.findById(saleID);
+
+        if (saleFind.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Sale not found.");
+        }
+
+        ModelSale sale = saleFind.get();
+
+        for (ModelUserCart c : sale.getSaleCart()) {
+            ModelItem cartItem = c.getCartItem();
+
+            cartItem.setItemCount(cartItem.getItemCount() + c.getCartCount());
+            repositoryItem.save(cartItem);
+        }
+
+        repositorySale.delete(sale);
+
+        return new ResponseEntity<>("Refund OK.", HttpStatus.OK);
     }
 }

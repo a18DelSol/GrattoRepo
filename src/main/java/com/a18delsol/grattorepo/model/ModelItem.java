@@ -13,9 +13,10 @@ public class ModelItem {
     @Id @GeneratedValue(strategy= GenerationType.AUTO) private Integer itemID;
 
     private String itemName;
+    private String itemCode;
     private Float itemPrice;
     private Integer itemCount;
     private Boolean itemRestrict;
     @ManyToMany private Set<ModelItemAttribute> itemAttribute;
-    @ManyToOne @JoinTable(name = "item_company_join") private ModelItemCompany itemCompany;
+    @ManyToOne private ModelItemCompany itemCompany;
 }
