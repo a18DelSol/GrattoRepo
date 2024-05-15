@@ -65,13 +65,6 @@ public class ControllerItem {
         return modelItemFind;
     }
 
-    @PostMapping(path="/code/{itemCode}")
-    public @ResponseBody String itemCodePost (@PathVariable String itemCode) {
-        WebClient webClient = WebClient.builder().baseUrl("https://world.openfoodfacts.org/api/v2/product").build();
-
-        return webClient.get().uri("/{itemCode}", itemCode).exchange().block().bodyToMono(String.class).block();
-    }
-
     @PostMapping(path="/")
     public @ResponseBody ArrayList<ModelItem> itemPost (@RequestBody ArrayList<ModelItem> modelItemData) {
         ArrayList<ModelItem> returnList = new ArrayList<>();
