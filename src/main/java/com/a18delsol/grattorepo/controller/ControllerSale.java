@@ -1,90 +1,149 @@
 package com.a18delsol.grattorepo.controller;
 
-import com.a18delsol.grattorepo.repository.RepositoryItem;
-import com.a18delsol.grattorepo.repository.RepositorySale;
-import com.a18delsol.grattorepo.repository.RepositoryUser;
+import com.a18delsol.grattorepo.model.sale.ModelSale;
+import com.a18delsol.grattorepo.model.sale.ModelSaleOrder;
+import com.a18delsol.grattorepo.model.sale.ModelSalePayment;
 import com.a18delsol.grattorepo.service.ServiceSale;
-import com.a18delsol.grattorepo.model.ModelSale;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
+import java.time.LocalDate;
+import java.util.Optional;
 
 @Controller
 @RequestMapping(path="/sale")
 public class ControllerSale {
-    @Autowired private RepositorySale repositorySale;
-    @Autowired private RepositoryUser repositoryUser;
-    @Autowired private RepositoryItem repositoryItem;
+    @Autowired
+    private ServiceSale service;
 
-    @GetMapping(path="/")
-    public @ResponseBody Iterable<ModelSale> saleGet () {
-        return repositorySale.findAll();
+    @GetMapping(path = "/{saleID}")
+    public @ResponseBody ResponseEntity<ModelSale> saleGetOne(@PathVariable Integer saleID) {
+        return service.saleGetOne(saleID);
     }
 
-    @GetMapping(path="/{saleID}")
-    public @ResponseBody ModelSale saleGet(@PathVariable Integer saleID) {
-        ModelSale modelSaleFind = repositorySale.findById(saleID).orElse(null);
-
-        if (modelSaleFind == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Sale not found.");
-        }
-
-        return modelSaleFind;
+    @GetMapping(path = "/")
+    public @ResponseBody ResponseEntity<Iterable<ModelSale>> saleGetAll() {
+        return service.saleGetAll();
     }
 
     @GetMapping(path="/find")
-    public @ResponseBody Iterable<ModelSale> saleFind (@RequestParam Integer saleUserID) {
-        return repositorySale.findSale(saleUserID);
+    public @ResponseBody ResponseEntity<Iterable<ModelSale>> saleFind(
+            @RequestParam Optional<Float> salePriceMin,
+            @RequestParam Optional<Float> salePriceMax,
+            @RequestParam Optional<LocalDate> saleDateMin,
+            @RequestParam Optional<LocalDate> saleDateMax) {
+        return service.saleFind(salePriceMin, salePriceMax, saleDateMin, saleDateMax);
     }
 
-    @PatchMapping(path="/{saleID}", consumes = "application/json-patch+json")
-    public @ResponseBody ModelSale salePatch(@PathVariable Integer saleID, @RequestBody JsonPatch patch) throws JsonPatchException, JsonProcessingException {
-        ModelSale modelSaleFind = repositorySale.findById(saleID).orElse(null);
-
-        if (modelSaleFind == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Sale not found.");
-        }
-
-        modelSaleFind = ServiceSale.salePatch(patch, modelSaleFind);
-
-        repositorySale.save(modelSaleFind);
-
-        return modelSaleFind;
+    @PostMapping(path = "/")
+    public @ResponseBody ResponseEntity<Iterable<ModelSale>> saleCreate(@RequestBody Iterable<ModelSale> sale) {
+        return service.saleCreate(sale);
     }
 
-    @PostMapping(path="/")
-    public @ResponseBody ArrayList<ModelSale> salePost (@RequestBody ArrayList<ModelSale> modelSaleData) {
-        ArrayList<ModelSale> returnList = new ArrayList<>();
-
-        for (ModelSale a : modelSaleData) {
-            returnList.add(ServiceSale.saleCreate(a, repositorySale));
-        }
-
-        return returnList;
+    @DeleteMapping(path = "/{saleID}")
+    public @ResponseBody ResponseEntity<String> saleDelete(@PathVariable Integer saleID) {
+        return service.saleDelete(saleID);
     }
 
-    /* EXCLUSIVE */
-
-    @GetMapping(path="/checkOut/{userID}")
-    public @ResponseBody ModelSale saleCheckOut (@PathVariable Integer userID) {
-        return ServiceSale.saleCheckOut(userID, repositorySale, repositoryUser);
+    @PatchMapping(path = "/{saleID}", consumes = "application/json-patch+json")
+    public @ResponseBody ResponseEntity<ModelSale> salePatch(@RequestBody JsonPatch patch, @PathVariable Integer saleID) throws JsonPatchException, JsonProcessingException {
+        return service.salePatch(patch, saleID);
     }
 
-    @PostMapping(path="/purchase/{userID}")
-    public @ResponseBody ModelSale salePurchase (@PathVariable Integer userID, @RequestBody ModelSale sale) {
-        return ServiceSale.salePurchase(userID, repositorySale, repositoryUser, repositoryItem, sale);
+    //========================================================================
+
+    @GetMapping(path="/report")
+    public @ResponseBody ResponseEntity<String> saleReport(
+            @RequestParam Optional<LocalDate> saleDateMin,
+            @RequestParam Optional<LocalDate> saleDateMax) {
+        return service.saleReport(saleDateMin, saleDateMax);
     }
 
-    @PostMapping(path="/refund/{saleID}")
-    public @ResponseBody ResponseEntity<String> salePurchase (@PathVariable Integer saleID) {
-        return ServiceSale.saleRefund(saleID, repositorySale, repositoryUser, repositoryItem);
+    @PostMapping(path = "/buy")
+    public @ResponseBody ResponseEntity<ModelSale> saleBuy(@RequestBody ModelSale sale) {
+        return service.saleBuy(sale);
+    }
+
+    @PostMapping(path = "/{saleID}/return")
+    public @ResponseBody ResponseEntity<String> saleReturn(@PathVariable Integer saleID) {
+        return service.saleReturn(saleID);
+    }
+
+    //========================================================================
+    // ModelSaleOrder sub-controller
+    //========================================================================
+
+    @GetMapping(path = "/order/{saleOrderID}")
+    public @ResponseBody ResponseEntity<ModelSaleOrder> saleOrderGetOne(@PathVariable Integer saleOrderID) {
+        return service.saleOrderGetOne(saleOrderID);
+    }
+
+    @GetMapping(path = "/order")
+    public @ResponseBody ResponseEntity<Iterable<ModelSaleOrder>> saleOrderGetAll() {
+        return service.saleOrderGetAll();
+    }
+
+    @GetMapping(path="/order/find")
+    public @ResponseBody ResponseEntity<Iterable<ModelSaleOrder>> saleOrderFind(
+            @RequestParam Optional<Float> orderAmountMin,
+            @RequestParam Optional<Float> orderAmountMax) {
+        return service.saleOrderFind(orderAmountMin, orderAmountMax);
+    }
+
+    @PostMapping(path = "/order")
+    public @ResponseBody ResponseEntity<Iterable<ModelSaleOrder>> saleOrderCreate(@RequestBody Iterable<ModelSaleOrder> saleOrder) {
+        return service.saleOrderCreate(saleOrder);
+    }
+
+    @DeleteMapping(path = "/order/{saleOrderID}")
+    public @ResponseBody ResponseEntity<String> saleOrderDelete(@PathVariable Integer saleOrderID) {
+        return service.saleOrderDelete(saleOrderID);
+    }
+
+    @PatchMapping(path = "/order/{saleOrderID}", consumes = "application/json-patch+json")
+    public @ResponseBody ResponseEntity<ModelSaleOrder> saleOrderPatch(@RequestBody JsonPatch patch, @PathVariable Integer saleOrderID)
+            throws JsonPatchException, JsonProcessingException {
+        return service.saleOrderPatch(patch, saleOrderID);
+    }
+
+    //========================================================================
+    // ModelSalePayment sub-controller
+    //========================================================================
+
+    @GetMapping(path = "/payment/{salePaymentID}")
+    public @ResponseBody ResponseEntity<ModelSalePayment> salePaymentGetOne(@PathVariable Integer salePaymentID) {
+        return service.salePaymentGetOne(salePaymentID);
+    }
+
+    @GetMapping(path = "/payment")
+    public @ResponseBody ResponseEntity<Iterable<ModelSalePayment>> salePaymentGetAll() {
+        return service.salePaymentGetAll();
+    }
+
+    @GetMapping(path="/payment/find")
+    public @ResponseBody ResponseEntity<Iterable<ModelSalePayment>> salePaymentFind(
+            @RequestParam Optional<String> paymentName) {
+        return service.salePaymentFind(paymentName);
+    }
+
+    @PostMapping(path = "/payment")
+    public @ResponseBody ResponseEntity<Iterable<ModelSalePayment>> salePaymentCreate(@RequestBody Iterable<ModelSalePayment> salePayment) {
+        return service.salePaymentCreate(salePayment);
+    }
+
+    @DeleteMapping(path = "/payment/{salePaymentID}")
+    public @ResponseBody ResponseEntity<String> salePaymentDelete(@PathVariable Integer salePaymentID) {
+        return service.salePaymentDelete(salePaymentID);
+    }
+
+    @PatchMapping(path = "/payment/{salePaymentID}", consumes = "application/json-patch+json")
+    public @ResponseBody ResponseEntity<ModelSalePayment> salePaymentPatch(@RequestBody JsonPatch patch, @PathVariable Integer salePaymentID)
+            throws JsonPatchException, JsonProcessingException {
+        return service.salePaymentPatch(patch, salePaymentID);
     }
 }

@@ -1,50 +1,58 @@
 package com.a18delsol.grattorepo.service;
 
-import com.a18delsol.grattorepo.model.*;
-import com.a18delsol.grattorepo.model.ModelDiscount;
-import com.a18delsol.grattorepo.repository.RepositoryDiscount;
+import com.a18delsol.grattorepo.model.discount.ModelDiscount;
+import com.a18delsol.grattorepo.repository.discount.RepositoryDiscount;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.cglib.core.Local;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.ui.Model;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Predicate;
+import java.util.Optional;
 
+@Service
 public class ServiceDiscount {
-    public static ModelDiscount discountCreate(ModelDiscount discount, RepositoryDiscount repository) {
-        repository.save(discount);
+    @Autowired
+    RepositoryDiscount repositoryDiscount;
 
-        return discount;
+    public ResponseEntity<ModelDiscount> discountGetOne(Integer discountID) {
+        return new ResponseEntity<>(repositoryDiscount.findById(discountID).orElseThrow(RuntimeException::new), HttpStatus.OK);
     }
 
-    public static ModelDiscount discountPatch(JsonPatch patch, ModelDiscount discount) throws JsonPatchException, JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.treeToValue(patch.apply(objectMapper.convertValue(discount, JsonNode.class)), ModelDiscount.class);
+    public ResponseEntity<Iterable<ModelDiscount>> discountGetAll() {
+        return new ResponseEntity<>(repositoryDiscount.findAll(), HttpStatus.OK);
     }
 
-    public static Boolean discountCheck(ModelDiscount discount, Set<ModelDiscount> discountExclude) {
-        LocalDate now = LocalDate.now();
+    public ResponseEntity<Iterable<ModelDiscount>> discountFind(
+            Optional<String> discountName) {
+        return new ResponseEntity<>(repositoryDiscount.findDiscount(discountName), HttpStatus.OK);
+    }
 
-        Boolean exclude = true;
-
-        if (discountExclude != null) {
-            exclude = discountExclude.stream().noneMatch(d -> Objects.equals(d.getDiscountID(), discount.getDiscountID()));
+    public ResponseEntity<Iterable<ModelDiscount>> discountCreate(Iterable<ModelDiscount> discount) {
+        for (ModelDiscount a : discount) {
+            repositoryDiscount.save(a);
         }
 
-        return now.toEpochDay() >= discount.getDiscountScheduleBegin().toEpochDay() &&
-               now.toEpochDay() <= discount.getDiscountScheduleClose().toEpochDay() &&
-               exclude;
+        return new ResponseEntity<>(repositoryDiscount.findAll(), HttpStatus.OK);
     }
 
+    public ResponseEntity<String> discountDelete(Integer discountID) {
+        ModelDiscount discount = repositoryDiscount.findById(discountID).orElseThrow(RuntimeException::new);
+
+        repositoryDiscount.delete(discount);
+
+        return new ResponseEntity<>("Delete OK.", HttpStatus.OK);
+    }
+
+    public ResponseEntity<ModelDiscount> discountPatch(JsonPatch patch, Integer discountID) throws JsonPatchException, JsonProcessingException {
+        ModelDiscount discount = repositoryDiscount.findById(discountID).orElseThrow(RuntimeException::new);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        return new ResponseEntity<>(objectMapper.treeToValue(patch.apply(objectMapper.convertValue(discount, JsonNode.class)), ModelDiscount.class), HttpStatus.OK);
+    }
 }

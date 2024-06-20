@@ -1,126 +1,391 @@
 package com.a18delsol.grattorepo.service;
 
-import com.a18delsol.grattorepo.model.*;
-import com.a18delsol.grattorepo.model.ModelSale;
-import com.a18delsol.grattorepo.repository.*;
-import com.a18delsol.grattorepo.repository.RepositorySale;
+import com.a18delsol.grattorepo.model.alert.ModelAlert;
+import com.a18delsol.grattorepo.model.item.ModelItem;
+import com.a18delsol.grattorepo.model.sale.ModelSale;
+import com.a18delsol.grattorepo.model.sale.ModelSaleOrder;
+import com.a18delsol.grattorepo.model.sale.ModelSalePayment;
+import com.a18delsol.grattorepo.model.stock.ModelStockEntry;
+import com.a18delsol.grattorepo.repository.item.RepositoryItem;
+import com.a18delsol.grattorepo.repository.sale.RepositorySale;
+import com.a18delsol.grattorepo.repository.sale.RepositorySaleOrder;
+import com.a18delsol.grattorepo.repository.sale.RepositorySalePayment;
+import com.a18delsol.grattorepo.repository.stock.RepositoryStockEntry;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Optional;
 
+@Service
 public class ServiceSale {
-    public static ModelSale saleCreate(ModelSale sale, RepositorySale repository) {
-        repository.save(sale);
+    @Autowired RepositorySale        repositorySale;
+    @Autowired RepositorySaleOrder   repositorySaleOrder;
+    @Autowired RepositorySalePayment repositorySalePayment;
+    @Autowired RepositoryStockEntry  repositoryStockEntry;
+    @Autowired RepositoryItem        repositoryItem;
+    @Autowired ServiceAlert          serviceAlert;
 
-        return sale;
+    public ResponseEntity<ModelSale> saleGetOne(Integer saleID) {
+        return new ResponseEntity<>(repositorySale.findById(saleID).orElseThrow(RuntimeException::new), HttpStatus.OK);
     }
 
-    public static ModelSale salePatch(JsonPatch patch, ModelSale sale) throws JsonPatchException, JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.treeToValue(patch.apply(objectMapper.convertValue(sale, JsonNode.class)), ModelSale.class);
+    public ResponseEntity<Iterable<ModelSale>> saleGetAll() {
+        return new ResponseEntity<>(repositorySale.findAll(), HttpStatus.OK);
     }
 
-    /* EXCLUSIVE */
-
-    public static ModelSale saleCheckOut(Integer userID, RepositorySale repositorySale, RepositoryUser repositoryUser) {
-        return null;
+    public ResponseEntity<Iterable<ModelSale>> saleFind(
+            Optional<Float> salePriceMin,
+            Optional<Float> salePriceMax,
+            Optional<LocalDate> saleDateMin,
+            Optional<LocalDate> saleDateMax) {
+        return new ResponseEntity<>(repositorySale.findSale(salePriceMin, salePriceMax, saleDateMin, saleDateMax), HttpStatus.OK);
     }
 
-    public static ModelSale salePurchase(Integer userID, RepositorySale repositorySale, RepositoryUser repositoryUser, RepositoryItem repositoryItem,
-        ModelSale sale) {
-        Optional<ModelUser> userFind = repositoryUser.findById(userID);
-
-        if (userFind.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found.");
+    public ResponseEntity<Iterable<ModelSale>> saleCreate(Iterable<ModelSale> sale) {
+        for (ModelSale a : sale) {
+            repositorySale.save(a);
         }
 
-        ModelUser user = userFind.get();
-
-        if (user.getUserCart().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User cart is empty.");
-        }
-
-        Set<ModelDiscount> saleDiscount = new HashSet<>();
-        Float salePrice = 0.0F;
-
-        for (ModelUserCart c : user.getUserCart()) {
-            ModelItem cartItem = c.getCartItem();
-
-            salePrice += cartItem.getItemPrice() * c.getCartCount();
-
-            cartItem.setItemCount(cartItem.getItemCount() - c.getCartCount());
-            repositoryItem.save(cartItem);
-
-            for (ModelUserAttribute a : user.getUserAttribute()) {
-                for (ModelDiscount d : a.getAttributeDiscount()) {
-                    if (ServiceDiscount.discountCheck(d, sale.getSaleDiscountExclude())) {
-                        salePrice *= (100 - d.getDiscountPercent()) / 100;
-                        saleDiscount.add(d);
-                    }
-                }
-            }
-
-            for (ModelItemAttribute a : cartItem.getItemAttribute()) {
-                for (ModelDiscount d : a.getAttributeDiscount()) {
-                    if (ServiceDiscount.discountCheck(d, sale.getSaleDiscountExclude())) {
-                        salePrice *= (100 - d.getDiscountPercent()) / 100;
-                        saleDiscount.add(d);
-                    }
-                }
-            }
-
-            for (ModelDiscount d : cartItem.getItemCompany().getCompanyDiscount()) {
-                if (ServiceDiscount.discountCheck(d, sale.getSaleDiscountExclude())) {
-                    salePrice *= (100 - d.getDiscountPercent()) / 100;
-                    saleDiscount.add(d);
-                }
-            }
-        }
-
-        Set<ModelUserCart> saleCart = new HashSet<>(user.getUserCart());
-
-        sale.setSaleUser(user);
-        sale.setSaleCart(saleCart);
-        sale.setSalePrice(salePrice);
-        sale.setSaleDate(LocalDate.now());
-        sale.setSaleTime(LocalTime.now());
-        sale.setSaleDiscountInclude(saleDiscount);
-        repositorySale.save(sale);
-
-        user.getUserCart().clear();
-        repositoryUser.save(user);
-
-        return sale;
+        return new ResponseEntity<>(repositorySale.findAll(), HttpStatus.OK);
     }
 
-    public static ResponseEntity<String> saleRefund(Integer saleID, RepositorySale repositorySale, RepositoryUser repositoryUser,
-        RepositoryItem repositoryItem) {
-        Optional<ModelSale> saleFind = repositorySale.findById(saleID);
-
-        if (saleFind.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Sale not found.");
-        }
-
-        ModelSale sale = saleFind.get();
-
-        for (ModelUserCart c : sale.getSaleCart()) {
-            ModelItem cartItem = c.getCartItem();
-
-            cartItem.setItemCount(cartItem.getItemCount() + c.getCartCount());
-            repositoryItem.save(cartItem);
-        }
+    public ResponseEntity<String> saleDelete(Integer saleID) {
+        ModelSale sale = repositorySale.findById(saleID).orElseThrow(RuntimeException::new);
 
         repositorySale.delete(sale);
 
-        return new ResponseEntity<>("Refund OK.", HttpStatus.OK);
+        return new ResponseEntity<>("Delete OK.", HttpStatus.OK);
+    }
+
+    public ResponseEntity<ModelSale> salePatch(JsonPatch patch, Integer saleID) throws JsonPatchException, JsonProcessingException {
+        ModelSale sale = repositorySale.findById(saleID).orElseThrow(RuntimeException::new);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        return new ResponseEntity<>(objectMapper.treeToValue(patch.apply(objectMapper.convertValue(sale, JsonNode.class)), ModelSale.class), HttpStatus.OK);
+    }
+
+    //========================================================================
+
+    public ResponseEntity<String> saleReport(Optional<LocalDate> saleDateMin, Optional<LocalDate> saleDateMax) {
+        Workbook workbook = new XSSFWorkbook();
+
+        Sheet sheet = workbook.createSheet("General");
+
+        Row header = sheet.createRow(0);
+
+        CellStyle headerStyle = workbook.createCellStyle();
+        headerStyle.setFillForegroundColor(IndexedColors.LIGHT_BLUE.getIndex());
+        headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+        XSSFFont font = ((XSSFWorkbook) workbook).createFont();
+        font.setFontName("Arial");
+        font.setFontHeightInPoints((short) 16);
+        font.setBold(true);
+        headerStyle.setFont(font);
+
+        Cell headerCell = header.createCell(0);
+        headerCell.setCellValue("SKU");
+        headerCell.setCellStyle(headerStyle);
+
+        headerCell = header.createCell(1);
+        headerCell.setCellValue("Valor total");
+        headerCell.setCellStyle(headerStyle);
+
+        headerCell = header.createCell(2);
+        headerCell.setCellValue("Medio de pago");
+        headerCell.setCellStyle(headerStyle);
+
+        headerCell = header.createCell(3);
+        headerCell.setCellValue("Origen de venta");
+        headerCell.setCellStyle(headerStyle);
+
+        headerCell = header.createCell(4);
+        headerCell.setCellValue("Fecha");
+        headerCell.setCellStyle(headerStyle);
+
+        headerCell = header.createCell(5);
+        headerCell.setCellValue("Hora");
+        headerCell.setCellStyle(headerStyle);
+
+        headerCell = header.createCell(6);
+        headerCell.setCellValue("Nombre de cliente");
+        headerCell.setCellStyle(headerStyle);
+
+        headerCell = header.createCell(7);
+        headerCell.setCellValue("Correo de cliente");
+        headerCell.setCellStyle(headerStyle);
+
+        headerCell = header.createCell(8);
+        headerCell.setCellValue("Teléfono de cliente");
+        headerCell.setCellStyle(headerStyle);
+
+        CellStyle style = workbook.createCellStyle();
+        style.setWrapText(false);
+
+        Iterable<ModelSale> array = repositorySale.findSale(null, null, saleDateMin, saleDateMax);
+        HashMap<ModelSalePayment, Float> paymentValue = new HashMap<>();
+
+        Integer iterate = 1;
+
+        for (ModelSale s : array) {
+            Row row = sheet.createRow(iterate);
+
+            String cellCode = "";
+            String cellName = "";
+
+            for (ModelSaleOrder o : s.getSaleOrder()) {
+                String itemCode  = o.getOrderEntry().getEntryItem().getItemCode();
+                String stockName = o.getOrderEntry().getEntryStock().getStockName();
+
+                if (cellCode.isEmpty()) {
+                    cellCode = String.format("%s", itemCode);
+                } else {
+                    cellCode = String.format("%s/%s", cellCode, itemCode);
+                }
+
+                if (cellName.isEmpty()) {
+                    cellName = String.format("%s", stockName);
+                } else {
+                    cellName = String.format("%s/%s", cellName, stockName);
+                }
+            }
+
+            if (!paymentValue.containsKey(s.getSalePayment())) {
+                paymentValue.put(s.getSalePayment(), s.getSalePrice());
+            } else {
+                paymentValue.put(s.getSalePayment(), paymentValue.get(s.getSalePayment()) + s.getSalePrice());
+            }
+
+            Cell cell = row.createCell(0);
+            cell.setCellValue(cellCode);
+            cell.setCellStyle(style);
+
+            cell = row.createCell(1);
+            cell.setCellValue(s.getSalePrice());
+            cell.setCellStyle(style);
+
+            cell = row.createCell(2);
+            cell.setCellValue(s.getSalePayment().getPaymentName());
+            cell.setCellStyle(style);
+
+            cell = row.createCell(3);
+            cell.setCellValue(cellName);
+            cell.setCellStyle(style);
+
+            cell = row.createCell(4);
+            cell.setCellValue(s.getSaleDate().toString());
+            cell.setCellStyle(style);
+
+            cell = row.createCell(5);
+            cell.setCellValue(s.getSaleTime().toString());
+            cell.setCellStyle(style);
+
+            cell = row.createCell(6);
+            cell.setCellValue(s.getSaleName());
+            cell.setCellStyle(style);
+
+            cell = row.createCell(7);
+            cell.setCellValue(s.getSaleMail());
+            cell.setCellStyle(style);
+
+            cell = row.createCell(8);
+            cell.setCellValue(s.getSaleCall());
+            cell.setCellStyle(style);
+
+            iterate++;
+        }
+
+        for (ModelSalePayment p : paymentValue.keySet()) {
+            Row row = sheet.createRow(iterate + 1);
+
+            Cell cell = row.createCell(0);
+            cell.setCellValue(String.format("%s: %s", p.getPaymentName(), paymentValue.get(p).toString()));
+            cell.setCellStyle(style);
+
+            iterate++;
+        }
+
+        sheet.autoSizeColumn(0);
+        sheet.autoSizeColumn(1);
+        sheet.autoSizeColumn(2);
+        sheet.autoSizeColumn(3);
+        sheet.autoSizeColumn(4);
+        sheet.autoSizeColumn(5);
+        sheet.autoSizeColumn(6);
+        sheet.autoSizeColumn(7);
+        sheet.autoSizeColumn(8);
+
+        File currDir = new File(".");
+        String path = currDir.getAbsolutePath();
+        String fileLocation = path.substring(0, path.length() - 1) + "sale.xlsx";
+
+        try {
+            FileOutputStream outputStream = new FileOutputStream(fileLocation);
+            workbook.write(outputStream);
+            workbook.close();
+        } catch (Exception e) {
+        }
+
+        return new ResponseEntity<>("Sale report OK.", HttpStatus.OK);
+    }
+
+    public ResponseEntity<ModelSale> saleBuy(ModelSale sale) {
+        Float salePrice = 0.0F;
+
+        for (ModelSaleOrder a : sale.getSaleOrder()) {
+            ModelStockEntry stockEntry = repositoryStockEntry.findById(a.getOrderEntry().getEntryID()).orElseThrow(RuntimeException::new);
+            ModelItem entryItem = stockEntry.getEntryItem();
+            Float   newPrice = stockEntry.getEntryPrice() * a.getOrderAmount();
+            Integer newEntry = stockEntry.getEntryCount() - a.getOrderAmount();
+            Integer newCount = entryItem.getItemCount() - a.getOrderAmount();
+
+            if (newEntry <= 5) {
+                ModelAlert newAlert = new ModelAlert();
+                newAlert.setAlertText(String.format("[Listado] El producto %s (%s) en la ubicación %s tiene una baja cantidad de disponibilidad. (cantidad actual: %d)",
+                        entryItem.getItemName(),
+                        entryItem.getItemCode(),
+                        stockEntry.getEntryStock().getStockName(),
+                        newEntry));
+                newAlert.setAlertDate(LocalDate.now());
+                newAlert.setAlertTime(LocalTime.now());
+                newAlert.setAlertSeen(false);
+
+                serviceAlert.alertCreate(newAlert);
+            }
+
+            if (newCount <= 5) {
+                ModelAlert newAlert = new ModelAlert();
+                newAlert.setAlertText(String.format("[General] El producto %s (%s) tiene una baja cantidad de disponibilidad. (cantidad actual: %d)",
+                        entryItem.getItemName(),
+                        entryItem.getItemCode(),
+                        newCount));
+                newAlert.setAlertDate(LocalDate.now());
+                newAlert.setAlertTime(LocalTime.now());
+                newAlert.setAlertSeen(false);
+
+                serviceAlert.alertCreate(newAlert);
+            }
+
+            salePrice += newPrice;
+            repositorySaleOrder.save(a);
+
+            entryItem.setItemCount(newCount);
+            repositoryItem.save(entryItem);
+
+            stockEntry.setEntryCount(newEntry);
+            repositoryStockEntry.save(stockEntry);
+        }
+
+        sale.setSalePrice(salePrice);
+        sale.setSaleChange(sale.getSaleAmount() - salePrice);
+        //sale.setSaleDate(LocalDate.now());
+        //sale.setSaleTime(LocalTime.now());
+        repositorySale.save(sale);
+
+        return new ResponseEntity<>(sale, HttpStatus.OK);
+    }
+
+    public ResponseEntity<String> saleReturn(Integer saleID) {
+        ModelSale sale = repositorySale.findById(saleID).orElseThrow(RuntimeException::new);
+        return new ResponseEntity<>("Return OK.", HttpStatus.OK);
+    }
+
+    //========================================================================
+    // ModelSaleOrder sub-service
+    //========================================================================
+
+    public ResponseEntity<ModelSaleOrder> saleOrderGetOne(Integer saleOrderID) {
+        return new ResponseEntity<>(repositorySaleOrder.findById(saleOrderID).orElseThrow(RuntimeException::new), HttpStatus.OK);
+    }
+
+    public ResponseEntity<Iterable<ModelSaleOrder>> saleOrderGetAll() {
+        return new ResponseEntity<>(repositorySaleOrder.findAll(), HttpStatus.OK);
+    }
+
+    public ResponseEntity<Iterable<ModelSaleOrder>> saleOrderFind(
+            Optional<Float> orderAmountMin,
+            Optional<Float> orderAmountMax) {
+        return new ResponseEntity<>(repositorySaleOrder.findSaleOrder(orderAmountMin, orderAmountMax), HttpStatus.OK);
+    }
+
+    public ResponseEntity<Iterable<ModelSaleOrder>> saleOrderCreate(Iterable<ModelSaleOrder> saleOrder) {
+        for (ModelSaleOrder a : saleOrder) {
+            repositorySaleOrder.save(a);
+        }
+
+        return new ResponseEntity<>(repositorySaleOrder.findAll(), HttpStatus.OK);
+    }
+
+    public ResponseEntity<String> saleOrderDelete(Integer saleOrderID) {
+        ModelSaleOrder saleOrder = repositorySaleOrder.findById(saleOrderID).orElseThrow(RuntimeException::new);
+
+        repositorySaleOrder.delete(saleOrder);
+
+        return new ResponseEntity<>("Delete OK.", HttpStatus.OK);
+    }
+
+    public ResponseEntity<ModelSaleOrder> saleOrderPatch(JsonPatch patch, Integer saleOrderID) throws JsonPatchException, JsonProcessingException {
+        ModelSaleOrder saleOrder = repositorySaleOrder.findById(saleOrderID).orElseThrow(RuntimeException::new);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        return new ResponseEntity<>(objectMapper.treeToValue(patch.apply(objectMapper.convertValue(saleOrder, JsonNode.class)), ModelSaleOrder.class), HttpStatus.OK);
+    }
+
+    //========================================================================
+    // ModelSalePayment sub-service
+    //========================================================================
+
+    public ResponseEntity<ModelSalePayment> salePaymentGetOne(Integer salePaymentID) {
+        return new ResponseEntity<>(repositorySalePayment.findById(salePaymentID).orElseThrow(RuntimeException::new), HttpStatus.OK);
+    }
+
+    public ResponseEntity<Iterable<ModelSalePayment>> salePaymentGetAll() {
+        return new ResponseEntity<>(repositorySalePayment.findAll(), HttpStatus.OK);
+    }
+
+    public ResponseEntity<Iterable<ModelSalePayment>> salePaymentFind(
+            Optional<String> paymentName) {
+        return new ResponseEntity<>(repositorySalePayment.findSalePayment(paymentName), HttpStatus.OK);
+    }
+
+    public ResponseEntity<Iterable<ModelSalePayment>> salePaymentCreate(Iterable<ModelSalePayment> salePayment) {
+        for (ModelSalePayment a : salePayment) {
+            repositorySalePayment.save(a);
+        }
+
+        return new ResponseEntity<>(repositorySalePayment.findAll(), HttpStatus.OK);
+    }
+
+    public ResponseEntity<String> salePaymentDelete(Integer salePaymentID) {
+        ModelSalePayment salePayment = repositorySalePayment.findById(salePaymentID).orElseThrow(RuntimeException::new);
+
+        repositorySalePayment.delete(salePayment);
+
+        return new ResponseEntity<>("Delete OK.", HttpStatus.OK);
+    }
+
+    public ResponseEntity<ModelSalePayment> salePaymentPatch(JsonPatch patch, Integer salePaymentID) throws JsonPatchException, JsonProcessingException {
+        ModelSalePayment salePayment = repositorySalePayment.findById(salePaymentID).orElseThrow(RuntimeException::new);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        return new ResponseEntity<>(objectMapper.treeToValue(patch.apply(objectMapper.convertValue(salePayment, JsonNode.class)), ModelSalePayment.class), HttpStatus.OK);
     }
 }

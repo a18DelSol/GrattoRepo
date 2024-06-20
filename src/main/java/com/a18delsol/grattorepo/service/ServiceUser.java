@@ -1,118 +1,125 @@
 package com.a18delsol.grattorepo.service;
 
-import com.a18delsol.grattorepo.model.ModelItem;
-import com.a18delsol.grattorepo.model.ModelUserCart;
-import com.a18delsol.grattorepo.model.ModelUser;
-import com.a18delsol.grattorepo.repository.RepositoryItem;
-import com.a18delsol.grattorepo.repository.RepositoryUserCart;
-import com.a18delsol.grattorepo.repository.RepositoryUser;
+import com.a18delsol.grattorepo.model.user.ModelUser;
+import com.a18delsol.grattorepo.model.user.ModelUserAttribute;
+import com.a18delsol.grattorepo.repository.user.RepositoryUser;
+import com.a18delsol.grattorepo.repository.user.RepositoryUserAttribute;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.Optional;
 
+@Service
 public class ServiceUser {
-    /* GENERAL */
-
-    public static ModelUser userCreate(ModelUser user, RepositoryUser repository) {
-        repository.save(user);
-
-        return user;
+    @Autowired RepositoryUser          repositoryUser;
+    @Autowired RepositoryUserAttribute repositoryUserAttribute;
+    
+    public ResponseEntity<ModelUser> userGetOne(Integer userID) {
+        return new ResponseEntity<>(repositoryUser.findById(userID).orElseThrow(RuntimeException::new), HttpStatus.OK);
     }
 
-    public static ModelUser userPatch(JsonPatch patch, ModelUser user) throws JsonPatchException, JsonProcessingException {
+    public ResponseEntity<Iterable<ModelUser>> userGetAll() {
+        return new ResponseEntity<>(repositoryUser.findAll(), HttpStatus.OK);
+    }
+
+    public ResponseEntity<Iterable<ModelUser>> userFind(
+            Optional<String> userName,
+            Optional<String> userMail) {
+        return new ResponseEntity<>(repositoryUser.findUser(userName, userMail), HttpStatus.OK);
+    }
+
+    public ResponseEntity<Iterable<ModelUser>> userCreate(Iterable<ModelUser> user) {
+        for (ModelUser a : user) {
+            repositoryUser.save(a);
+        }
+
+        return new ResponseEntity<>(repositoryUser.findAll(), HttpStatus.OK);
+    }
+
+    public ResponseEntity<String> userDelete(Integer userID) {
+        ModelUser user = repositoryUser.findById(userID).orElseThrow(RuntimeException::new);
+
+        repositoryUser.delete(user);
+
+        return new ResponseEntity<>("Delete OK.", HttpStatus.OK);
+    }
+
+    public ResponseEntity<ModelUser> userPatch(JsonPatch patch, Integer userID) throws JsonPatchException, JsonProcessingException {
+        ModelUser user = repositoryUser.findById(userID).orElseThrow(RuntimeException::new);
+
         ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.treeToValue(patch.apply(objectMapper.convertValue(user, JsonNode.class)), ModelUser.class);
+
+        return new ResponseEntity<>(objectMapper.treeToValue(patch.apply(objectMapper.convertValue(user, JsonNode.class)), ModelUser.class), HttpStatus.OK);
     }
 
-    /* EXCLUSIVE */
+    public ResponseEntity<ModelUser> userSignUp(ModelUser user) {
+        ModelUser userFind = repositoryUser.findByUserMail(user.getUserMail());
 
-    public static ResponseEntity<String> userSignUp(ModelUser user, RepositoryUser repository) {
-        ModelUser modelUserFind = repository.findByUserMail(user.getUserMail());
-
-        if (modelUserFind != null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mail already in use.");
+        if (userFind != null) {
+            throw new RuntimeException();
         }
 
-        repository.save(user);
-
-        return new ResponseEntity<>("Sign up OK.", HttpStatus.OK);
-    }
-
-    public static ResponseEntity<ModelUser> userSignIn(ModelUser user, RepositoryUser repository) {
-        ModelUser modelUserFind = repository.findByUserMail(user.getUserMail());
-
-        if (modelUserFind == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User not found.");
-        } else if (!modelUserFind.getUserPass().equals(user.getUserPass())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Pass is incorrect.");
-        }
-
-        return new ResponseEntity<>(modelUserFind, HttpStatus.OK);
-    }
-
-    public static ResponseEntity<ModelUser> userCartAttach(Integer userID, RepositoryUser repositoryUser, RepositoryItem repositoryItem,
-        RepositoryUserCart repositoryUserCart, ModelUserCart cart) {
-        Optional<ModelUser> modelUserFind = repositoryUser.findById(userID);
-        Optional<ModelItem> modelItemFind;
-
-        if (cart.getCartItem().getItemID() != null) {
-            modelItemFind = repositoryItem.findById(cart.getCartItem().getItemID());
-        } else {
-            modelItemFind = repositoryItem.findByItemCode(cart.getCartItem().getItemCode());
-        }
-
-        if (modelUserFind.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found.");
-        } else if (modelItemFind.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Item not found.");
-        }
-
-        ModelUser user = modelUserFind.get();
-        ModelItem item = modelItemFind.get();
-
-        if (cart.getCartCount() < 1) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cart item count cannot be less than 1.");
-        } else if (cart.getCartCount() > item.getItemCount()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cart item count cannot be more than the item count.");
-        } else if (item.getItemRestrict() && LocalDate.now().getYear() - user.getUserBirth().getYear() < 18) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User cannot add item to cart due to being underage.");
-        }
-
-        cart.setCartItem(item);
-        repositoryUserCart.save(cart);
-
-        user.getUserCart().add(cart);
         repositoryUser.save(user);
 
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
-    public static ResponseEntity<ModelUser> userCartDetach(Integer userID, RepositoryUser repositoryUser, RepositoryUserCart repositoryUserCart, Integer cartID) {
-        Optional<ModelUser> modelUserFind = repositoryUser.findById(userID);
-        Optional<ModelUserCart> modelCartFind = repositoryUserCart.findById(cartID);
+    public ResponseEntity<ModelUser> userSignIn(ModelUser user) {
+        ModelUser userFind = repositoryUser.findByUserMail(user.getUserMail());
 
-        if (modelUserFind.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User not found.");
-        } else if (modelCartFind.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cart not found.");
+        if (!userFind.getUserPass().equals(user.getUserPass())) {
+            throw new RuntimeException();
         }
 
-        ModelUser user = modelUserFind.get();
-        ModelUserCart cart = modelCartFind.get();
+        return new ResponseEntity<>(userFind, HttpStatus.OK);
+    }
 
-        user.getUserCart().remove(cart);
-        repositoryUser.save(user);
+    //========================================================================
+    // ModelUserAttribute sub-service
+    //========================================================================
 
-        repositoryUserCart.delete(cart);
+    public ResponseEntity<ModelUserAttribute> userAttributeGetOne(Integer userAttributeID) {
+        return new ResponseEntity<>(repositoryUserAttribute.findById(userAttributeID).orElseThrow(RuntimeException::new), HttpStatus.OK);
+    }
 
-        return new ResponseEntity<>(user, HttpStatus.OK);
+    public ResponseEntity<Iterable<ModelUserAttribute>> userAttributeGetAll() {
+        return new ResponseEntity<>(repositoryUserAttribute.findAll(), HttpStatus.OK);
+    }
+
+    public ResponseEntity<Iterable<ModelUserAttribute>> userAttributeFind(
+            Optional<String> userAttributeName) {
+        return new ResponseEntity<>(repositoryUserAttribute.findUserAttribute(userAttributeName), HttpStatus.OK);
+    }
+
+    public ResponseEntity<Iterable<ModelUserAttribute>> userAttributeCreate(Iterable<ModelUserAttribute> userAttribute) {
+        for (ModelUserAttribute a : userAttribute) {
+            repositoryUserAttribute.save(a);
+        }
+
+        return new ResponseEntity<>(repositoryUserAttribute.findAll(), HttpStatus.OK);
+    }
+
+    public ResponseEntity<String> userAttributeDelete(Integer userAttributeID) {
+        ModelUserAttribute userAttribute = repositoryUserAttribute.findById(userAttributeID).orElseThrow(RuntimeException::new);
+
+        repositoryUserAttribute.delete(userAttribute);
+
+        return new ResponseEntity<>("Delete OK.", HttpStatus.OK);
+    }
+
+    public ResponseEntity<ModelUserAttribute> userAttributePatch(JsonPatch patch, Integer userAttributeID) throws JsonPatchException, JsonProcessingException {
+        ModelUserAttribute userAttribute = repositoryUserAttribute.findById(userAttributeID).orElseThrow(RuntimeException::new);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        return new ResponseEntity<>(objectMapper.treeToValue(patch.apply(objectMapper.convertValue(userAttribute, JsonNode.class)), ModelUserAttribute.class), HttpStatus.OK);
     }
 }
