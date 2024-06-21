@@ -13,8 +13,7 @@ public interface RepositoryItem extends CrudRepository<ModelItem, Integer> {
     @Query(nativeQuery=true,
     value="SELECT * FROM model_item"
     + " WHERE (:itemName is null OR item_name regexp :itemName)"
-    + " AND   (:itemCode is null OR item_code regexp :itemCode)"
-    + " AND   (:itemRestrict is null OR item_restrict = :itemRestrict)")
+    + " AND   (:itemCode is null OR item_code regexp :itemCode)")
     Iterable<ModelItem> findItem(
     Optional<String> itemName,
     Optional<String> itemCode);

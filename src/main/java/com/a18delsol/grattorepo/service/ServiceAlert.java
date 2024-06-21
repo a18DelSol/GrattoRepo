@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Optional;
 
 @Service
@@ -63,24 +62,12 @@ public class ServiceAlert {
 
     //========================================================================
 
-    public ResponseEntity<Iterable<ModelAlert>> alertFetch() {
-        ArrayList<ModelAlert> arrayOld = (ArrayList<ModelAlert>) repositoryAlert.findAll();
-        ArrayList<ModelAlert> arrayNew = new ArrayList<>();
+    public ResponseEntity<ModelAlert> alertDiscard(Integer alertID) {
+        ModelAlert alert = repositoryAlert.findById(alertID).orElseThrow(RuntimeException::new);
 
-        for (ModelAlert a : arrayOld) {
-            ModelAlert newAlert = new ModelAlert();
-            newAlert.setAlertID(a.getAlertID());
-            newAlert.setAlertText(a.getAlertText());
-            newAlert.setAlertDate(a.getAlertDate());
-            newAlert.setAlertTime(a.getAlertTime());
-            newAlert.setAlertSeen(a.getAlertSeen());
-            arrayNew.add(newAlert);
+        alert.setAlertSeen(true);
+        repositoryAlert.save(alert);
 
-            a.setAlertSeen(true);
-        }
-
-        repositoryAlert.saveAll(arrayOld);
-
-        return new ResponseEntity<>(arrayNew, HttpStatus.OK);
+        return new ResponseEntity<>(alert, HttpStatus.OK);
     }
 }

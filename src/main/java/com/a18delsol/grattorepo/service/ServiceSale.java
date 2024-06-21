@@ -247,6 +247,8 @@ public class ServiceSale {
 
     public ResponseEntity<ModelSale> saleBuy(ModelSale sale) {
         Float salePrice = 0.0F;
+        LocalDate saleDate = LocalDate.now();
+        LocalTime saleTime = LocalTime.now();
 
         for (ModelSaleOrder a : sale.getSaleOrder()) {
             ModelStockEntry stockEntry = repositoryStockEntry.findById(a.getOrderEntry().getEntryID()).orElseThrow(RuntimeException::new);
@@ -257,28 +259,26 @@ public class ServiceSale {
 
             if (newEntry <= 5) {
                 ModelAlert newAlert = new ModelAlert();
-                newAlert.setAlertText(String.format("[Listado] El producto %s (%s) en la ubicación %s tiene una baja cantidad de disponibilidad. (cantidad actual: %d)",
+                newAlert.setAlertText(String.format("[Listado] El producto %s (%s) en la ubicación (%s) tiene una baja cantidad de disponibilidad (cantidad actual: %d)",
                         entryItem.getItemName(),
                         entryItem.getItemCode(),
                         stockEntry.getEntryStock().getStockName(),
                         newEntry));
-                newAlert.setAlertDate(LocalDate.now());
-                newAlert.setAlertTime(LocalTime.now());
+                newAlert.setAlertDate(saleDate);
+                newAlert.setAlertTime(saleTime);
                 newAlert.setAlertSeen(false);
-
                 serviceAlert.alertCreate(newAlert);
             }
 
             if (newCount <= 5) {
                 ModelAlert newAlert = new ModelAlert();
-                newAlert.setAlertText(String.format("[General] El producto %s (%s) tiene una baja cantidad de disponibilidad. (cantidad actual: %d)",
+                newAlert.setAlertText(String.format("[General] El producto %s (%s) tiene una baja cantidad de disponibilidad (cantidad actual: %d)",
                         entryItem.getItemName(),
                         entryItem.getItemCode(),
                         newCount));
-                newAlert.setAlertDate(LocalDate.now());
-                newAlert.setAlertTime(LocalTime.now());
+                newAlert.setAlertDate(saleDate);
+                newAlert.setAlertTime(saleTime);
                 newAlert.setAlertSeen(false);
-
                 serviceAlert.alertCreate(newAlert);
             }
 
@@ -290,12 +290,32 @@ public class ServiceSale {
 
             stockEntry.setEntryCount(newEntry);
             repositoryStockEntry.save(stockEntry);
+
+            for (ModelStockEntry e : entryItem.getItemEntry()) {
+                if (e.getEntryCount() > newCount) {
+                    if (newCount <= 5) {
+                        ModelAlert newAlert = new ModelAlert();
+                        newAlert.setAlertText(String.format("[Listado] El producto %s (%s) en la ubicación (%s) tiene una baja cantidad de disponibilidad (cantidad actual: %d)",
+                                entryItem.getItemName(),
+                                entryItem.getItemCode(),
+                                e.getEntryStock().getStockName(),
+                                newEntry));
+                        newAlert.setAlertDate(saleDate);
+                        newAlert.setAlertTime(saleTime);
+                        newAlert.setAlertSeen(false);
+                        serviceAlert.alertCreate(newAlert);
+                    }
+
+                    e.setEntryCount(newCount);
+                    repositoryStockEntry.save(e);
+                }
+            }
         }
 
         sale.setSalePrice(salePrice);
         sale.setSaleChange(sale.getSaleAmount() - salePrice);
-        //sale.setSaleDate(LocalDate.now());
-        //sale.setSaleTime(LocalTime.now());
+        sale.setSaleDate(saleDate);
+        sale.setSaleTime(saleTime);
         repositorySale.save(sale);
 
         return new ResponseEntity<>(sale, HttpStatus.OK);
@@ -303,6 +323,22 @@ public class ServiceSale {
 
     public ResponseEntity<String> saleReturn(Integer saleID) {
         ModelSale sale = repositorySale.findById(saleID).orElseThrow(RuntimeException::new);
+
+        for (ModelSaleOrder a : sale.getSaleOrder()) {
+            ModelStockEntry stockEntry = a.getOrderEntry();
+            ModelItem entryItem = stockEntry.getEntryItem();
+            Integer newEntry = stockEntry.getEntryCount() + a.getOrderAmount();
+            Integer newCount = entryItem.getItemCount() + a.getOrderAmount();
+
+            entryItem.setItemCount(newCount);
+            repositoryItem.save(entryItem);
+
+            stockEntry.setEntryCount(newEntry);
+            repositoryStockEntry.save(stockEntry);
+        }
+
+        repositorySale.delete(sale);
+
         return new ResponseEntity<>("Return OK.", HttpStatus.OK);
     }
 

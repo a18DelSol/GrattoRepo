@@ -51,8 +51,8 @@ public class ControllerAlert {
 
     //========================================================================
 
-    @GetMapping(path = "/fetch")
-    public @ResponseBody ResponseEntity<Iterable<ModelAlert>> alertFetch() {
-        return service.alertFetch();
+    @PostMapping(path = "/{alertID}/discard")
+    public @ResponseBody ResponseEntity<ModelAlert> alertDiscard(@PathVariable Integer alertID) {
+        return service.alertDiscard(alertID);
     }
 }
