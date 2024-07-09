@@ -1,4 +1,4 @@
-package com.a18delsol.grattorepo.model.alert;
+package com.a18delsol.grattorepo.model.history;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -13,11 +13,10 @@ import java.time.LocalTime;
 @Getter
 @Setter
 @Entity
-public class ModelAlert {
-    @Id @GeneratedValue(strategy= GenerationType.AUTO) private Integer alertID;
+public class ModelHistory {
+    @Id @GeneratedValue(strategy= GenerationType.AUTO) private Integer historyID;
 
-    private String alertText;
-    private LocalDate alertDate;
-    private LocalTime alertTime;
-    private Boolean alertSeen;
+    private String  historyText;
+    private LocalDate historyDate;
+    private LocalTime historyTime;
 }

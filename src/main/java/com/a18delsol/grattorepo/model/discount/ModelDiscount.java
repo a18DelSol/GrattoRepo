@@ -7,6 +7,8 @@ import com.a18delsol.grattorepo.model.user.ModelUserCart;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,9 +29,9 @@ import java.util.Set;
 public class ModelDiscount {
     @Id @GeneratedValue(strategy= GenerationType.AUTO) private Integer discountID;
 
-    private String discountName;
-    private LocalDate discountScheduleBegin;
-    private LocalDate discountScheduleClose;
+    @NotBlank private String discountName;
+    @NotNull private LocalDate discountScheduleBegin;
+    @NotNull private LocalDate discountScheduleClose;
     @ManyToMany private Set<ModelUserAttribute> discountUserAttribute;
     @ManyToMany private Set<ModelItemAttribute> discountItemAttribute;
     @ManyToMany private Set<ModelItemCompany> discountItemCompany;

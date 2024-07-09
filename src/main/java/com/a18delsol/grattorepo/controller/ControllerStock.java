@@ -91,6 +91,16 @@ public class ControllerStock {
 
     //========================================================================
 
+    @PatchMapping(path = "/entry/{stockEntryID}/count")
+    public @ResponseBody ResponseEntity<String> stockEntryUpdateCount(@PathVariable Integer stockEntryID, @RequestParam Integer entryCount) {
+        return service.stockEntryUpdateCount(stockEntryID, entryCount);
+    }
+
+    @PatchMapping(path = "/entry/{stockEntryID}/price")
+    public @ResponseBody ResponseEntity<String> stockEntryUpdatePrice(@PathVariable Integer stockEntryID, @RequestParam Float entryPrice) {
+        return service.stockEntryUpdatePrice(stockEntryID, entryPrice);
+    }
+
     @GetMapping(path="/entry/report")
     public @ResponseBody ResponseEntity<String> stockEntryReport() {
         return service.stockEntryReport();
