@@ -45,6 +45,13 @@ public class ControllerItem {
     }
 
     //========================================================================
+
+    @PatchMapping(path = "/{itemID}/count")
+    public @ResponseBody ResponseEntity<String> itemUpdateCount(@PathVariable Integer itemID, @RequestParam Integer itemCount) {
+        return service.itemUpdateCount(itemID, itemCount);
+    }
+
+    //========================================================================
     // ModelItemAttribute sub-controller
     //========================================================================
 

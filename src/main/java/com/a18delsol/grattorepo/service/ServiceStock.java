@@ -1,7 +1,9 @@
 package com.a18delsol.grattorepo.service;
 
+import com.a18delsol.grattorepo.model.item.ModelItem;
 import com.a18delsol.grattorepo.model.stock.ModelStock;
 import com.a18delsol.grattorepo.model.stock.ModelStockEntry;
+import com.a18delsol.grattorepo.repository.item.RepositoryItem;
 import com.a18delsol.grattorepo.repository.stock.RepositoryStock;
 import com.a18delsol.grattorepo.repository.stock.RepositoryStockEntry;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -25,6 +27,8 @@ import java.util.Optional;
 public class ServiceStock {
     @Autowired RepositoryStock      repositoryStock;
     @Autowired RepositoryStockEntry repositoryStockEntry;
+    @Autowired RepositoryItem       repositoryItem;
+    @Autowired ServiceHistory       serviceHistory;
 
     public ResponseEntity<ModelStock> stockGetOne(Integer stockID) {
         return new ResponseEntity<>(repositoryStock.findById(stockID).orElseThrow(RuntimeException::new), HttpStatus.OK);
@@ -42,6 +46,7 @@ public class ServiceStock {
     public ResponseEntity<Iterable<ModelStock>> stockCreate(Iterable<ModelStock> stock) {
         for (ModelStock a : stock) {
             repositoryStock.save(a);
+            serviceHistory.historyCreate(String.format("[Stock] Creación (%s)", a.getStockName()));
         }
 
         return new ResponseEntity<>(repositoryStock.findAll(), HttpStatus.OK);
@@ -51,6 +56,7 @@ public class ServiceStock {
         ModelStock stock = repositoryStock.findById(stockID).orElseThrow(RuntimeException::new);
 
         repositoryStock.delete(stock);
+        serviceHistory.historyCreate(String.format("[Stock] Eliminación (%s)", stock.getStockName()));
 
         return new ResponseEntity<>("Delete OK.", HttpStatus.OK);
     }
@@ -86,6 +92,14 @@ public class ServiceStock {
     public ResponseEntity<Iterable<ModelStockEntry>> stockEntryCreate(Iterable<ModelStockEntry> stockEntry) {
         for (ModelStockEntry a : stockEntry) {
             repositoryStockEntry.save(a);
+
+            ModelStock historyStock = repositoryStock.findById(a.getEntryStock().getStockID()).orElseThrow(RuntimeException::new);
+            ModelItem  historyItem  = repositoryItem.findById(a.getEntryItem().getItemID()).orElseThrow(RuntimeException::new);
+
+            serviceHistory.historyCreate(String.format("[Listado] Creación (%s : %s [%s])",
+                    historyStock.getStockName(),
+                    historyItem.getItemName(),
+                    historyItem.getItemCode()));
         }
 
         return new ResponseEntity<>(repositoryStockEntry.findAll(), HttpStatus.OK);
@@ -95,6 +109,10 @@ public class ServiceStock {
         ModelStockEntry stockEntry = repositoryStockEntry.findById(stockEntryID).orElseThrow(RuntimeException::new);
 
         repositoryStockEntry.delete(stockEntry);
+        serviceHistory.historyCreate(String.format("[Listado] Eliminación (%s : %s [%s])",
+                stockEntry.getEntryStock().getStockName(),
+                stockEntry.getEntryItem().getItemName(),
+                stockEntry.getEntryItem().getItemCode()));
 
         return new ResponseEntity<>("Delete OK.", HttpStatus.OK);
     }
@@ -105,6 +123,52 @@ public class ServiceStock {
         ObjectMapper objectMapper = new ObjectMapper();
 
         return new ResponseEntity<>(objectMapper.treeToValue(patch.apply(objectMapper.convertValue(stockEntry, JsonNode.class)), ModelStockEntry.class), HttpStatus.OK);
+    }
+
+    //========================================================================
+
+    public ResponseEntity<String> stockEntryUpdateCount(Integer stockEntryID, Integer entryCount) {
+        ModelStockEntry stockEntry = repositoryStockEntry.findById(stockEntryID).orElseThrow(RuntimeException::new);
+        Integer oldCount = stockEntry.getEntryCount();
+        Integer newCount = oldCount + entryCount;
+
+        if (newCount < 0) {
+            newCount = 0;
+        } else if (newCount > stockEntry.getEntryItem().getItemCount()) {
+            newCount = stockEntry.getEntryItem().getItemCount();
+        }
+
+        stockEntry.setEntryCount(newCount);
+        repositoryStockEntry.save(stockEntry);
+        serviceHistory.historyCreate(String.format("[Listado] Actualización (%s : %s [%s], stock anterior: %d, stock actual: %d)",
+                stockEntry.getEntryStock().getStockName(),
+                stockEntry.getEntryItem().getItemName(),
+                stockEntry.getEntryItem().getItemCode(),
+                oldCount,
+                newCount));
+
+        return new ResponseEntity<>("Update OK.", HttpStatus.OK);
+    }
+
+    public ResponseEntity<String> stockEntryUpdatePrice(Integer stockEntryID, Float entryPrice) {
+        ModelStockEntry stockEntry = repositoryStockEntry.findById(stockEntryID).orElseThrow(RuntimeException::new);
+        Float oldPrice = stockEntry.getEntryPrice();
+        Float newPrice = oldPrice + entryPrice;
+
+        if (newPrice < 0.0F) {
+            newPrice = 0.0F;
+        }
+
+        stockEntry.setEntryPrice(newPrice);
+        repositoryStockEntry.save(stockEntry);
+        serviceHistory.historyCreate(String.format("[Listado] Actualización (%s : %s [%s], precio anterior: %f, precio actual: %f)",
+                stockEntry.getEntryStock().getStockName(),
+                stockEntry.getEntryItem().getItemName(),
+                stockEntry.getEntryItem().getItemCode(),
+                oldPrice,
+                newPrice));
+
+        return new ResponseEntity<>("Update OK.", HttpStatus.OK);
     }
 
     public ResponseEntity<String> stockEntryReport() {

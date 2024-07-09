@@ -57,9 +57,9 @@ Una Tienda (internamente "Stock") es un punto de venta que dispone de un nombre 
 |--------------|--------|--------|------------------|
 | `stock/find` | GET    | N/A    | Stock (Múltiple) |
 
-| Parámetro   | Tipo   | Descripción          |
-|-------------|--------|----------------------|
-| `stockName` | String | Nombre de la tienda. |
+| Parámetro   | Clase | Tipo   | Descripción          |
+|-------------|-------|--------|----------------------|
+| `stockName` | Query | String | Nombre de la tienda. |
 
 *Ejemplo*
 
@@ -152,16 +152,33 @@ Un Producto ("Item") es un producto que dispone de un nombre, un código SKU, un
 |-------------|--------|--------|-----------------|
 | `item/find` | GET    | N/A    | Item (Múltiple) |
 
-| Parámetro      | Tipo    | Descripción                   |
-|----------------|---------|-------------------------------|
-| `itemName`     | String  | Nombre del producto.          |
-| `itemCode`     | String  | Código del producto.          |
-| `itemCountMin` | Integer | Cantidad mínima del producto. |
-| `itemCountMax` | Integer | Cantidad máxima del producto. |
+| Parámetro      | Clase | Tipo    | Descripción                   |
+|----------------|-------|---------|-------------------------------|
+| `itemName`     | Query | String  | Nombre del producto.          |
+| `itemCode`     | Query | String  | Código del producto.          |
+| `itemCountMin` | Query | Integer | Cantidad mínima del producto. |
+| `itemCountMax` | Query | Integer | Cantidad máxima del producto. |
 
 *Ejemplo*
 
 `item/find?itemName=Trum`
+
+#### Actualizar cantidad
+
+Permite actualizar la cantidad de un producto. Funciona como una diferencia (e.j. "10" se entiende como la cantidad actual + 10).
+
+| URL                   | Método | Cuerpo | Respuesta |
+|-----------------------|--------|--------|-----------|
+| `item/{itemID}/count` | PATCH  | N/A    | String    |
+
+| Parámetro   | Clase | Tipo    | Descripción             |
+|-------------|-------|---------|-------------------------|
+| `{itemID}`  | Path  | Integer | ID del producto.        |
+| `itemCount` | Query | Integer | Diferencia de cantidad. |
+
+*Ejemplo*
+
+`item/1/count?itemCount=10`
 
 ## Listado
 Un Listado ("StockEntry") se ocupa de conectar un Producto y una Tienda, agregando información adicional como por cuánto se vende el Producto y cuánto de ese producto hay para esa Tienda.
@@ -197,16 +214,50 @@ Un Listado ("StockEntry") se ocupa de conectar un Producto y una Tienda, agregan
 |--------------------|--------|--------|-----------------------|
 | `stock/entry/find` | GET    | N/A    | StockEntry (Múltiple) |
 
-| Parámetro       | Tipo    | Descripción                  |
-|-----------------|---------|------------------------------|
-| `entryCountMin` | Integer | Cantidad mínima del listado. |
-| `entryCountMax` | Integer | Cantidad máxima del listado. |
-| `entryPriceMin` | Float   | Precio mínimo del listado.   |
-| `entryPriceMax` | Float   | Precio máximo del listado.   |
+| Parámetro       | Clase | Tipo    | Descripción                  |
+|-----------------|-------|---------|------------------------------|
+| `entryCountMin` | Query | Integer | Cantidad mínima del listado. |
+| `entryCountMax` | Query | Integer | Cantidad máxima del listado. |
+| `entryPriceMin` | Query | Float   | Precio mínimo del listado.   |
+| `entryPriceMax` | Query | Float   | Precio máximo del listado.   |
 
 *Ejemplo*
 
 `stock/entry/find?entryCountMin=100&entryCountMax=200`
+
+#### Actualizar cantidad
+
+Permite actualizar la cantidad de un listado. Funciona como una diferencia (e.j. "10" se entiende como la cantidad actual + 10).
+
+| URL                           | Método | Cuerpo | Respuesta |
+|-------------------------------|--------|--------|-----------|
+| `stock/entry/{entryID}/count` | PATCH  | N/A    | String    |
+
+| Parámetro    | Clase | Tipo    | Descripción             |
+|--------------|-------|---------|-------------------------|
+| `{entryID}`  | Path  | Integer | ID del listado.         |
+| `entryCount` | Query | Integer | Diferencia de cantidad. |
+
+*Ejemplo*
+
+`stock/entry/1/count?entryCount=10`
+
+#### Actualizar precio
+
+Permite actualizar el precio de un listado. Funciona como una diferencia (e.j. "10" se entiende como el precio actual + 10).
+
+| URL                           | Método | Cuerpo | Respuesta |
+|-------------------------------|--------|--------|-----------|
+| `stock/entry/{entryID}/price` | PATCH  | N/A    | String    |
+
+| Parámetro    | Clase | Tipo  | Descripción           |
+|--------------|-------|-------|-----------------------|
+| `{entryID}`  | Path  | Float | ID del listado.       |
+| `entryPrice` | Query | Float | Diferencia de precio. |
+
+*Ejemplo*
+
+`stock/entry/1/price?entryPrice=10`
 
 #### Reporte
 
@@ -263,10 +314,10 @@ Una Compra ("Sale") describe la venta de un Listado (o mas), agregando informaci
 |-------------|--------|--------|-----------------|
 | `sale/find` | GET    | N/A    | Sale (Múltiple) |
 
-| Parámetro      | Tipo  | Descripción                |
-|----------------|-------|----------------------------|
-| `salePriceMin` | Float | Precio mínimo de la venta. |
-| `salePriceMax` | Float | Precio máximo de la venta. |
+| Parámetro      | Clase | Tipo  | Descripción                |
+|----------------|-------|-------|----------------------------|
+| `salePriceMin` | Query | Float | Precio mínimo de la venta. |
+| `salePriceMax` | Query | Float | Precio máximo de la venta. |
 
 *Ejemplo*
 
@@ -278,10 +329,10 @@ Una Compra ("Sale") describe la venta de un Listado (o mas), agregando informaci
 |---------------|--------|--------|---------------------|
 | `sale/report` | GET    | N/A    | Archivo Excel .xlsx |
 
-| Parámetro     | Tipo      | Descripción                                         |
-|---------------|-----------|-----------------------------------------------------|
-| `saleDateMin` | LocalDate | Piso del intervalo de tiempo del reporte de ventas. |
-| `saleDateMax` | LocalDate | Tope del intervalo de tiempo del reporte de ventas. |
+| Parámetro     | Clase | Tipo      | Descripción                                         |
+|---------------|-------|-----------|-----------------------------------------------------|
+| `saleDateMin` | Query | LocalDate | Piso del intervalo de tiempo del reporte de ventas. |
+| `saleDateMax` | Query | LocalDate | Tope del intervalo de tiempo del reporte de ventas. |
 
 *Ejemplo*
 
@@ -337,11 +388,11 @@ Un Contacto ("Contact") describe un contacto, que está asociado a una Compañí
 |----------------|--------|--------|-----------------|
 | `contact/find` | GET    | N/A    | Sale (Múltiple) |
 
-| Parámetro     | Tipo   | Descripción            |
-|---------------|--------|------------------------|
-| `contactName` | String | Nombre del contacto.   |
-| `contactMail` | String | Teléfono del contacto. |
-| `contactCall` | String | Correo del contacto.   |
+| Parámetro     | Clase | Tipo   | Descripción            |
+|---------------|-------|--------|------------------------|
+| `contactName` | Query | String | Nombre del contacto.   |
+| `contactMail` | Query | String | Teléfono del contacto. |
+| `contactCall` | Query | String | Correo del contacto.   |
 
 *Ejemplo*
 
@@ -356,10 +407,31 @@ Una Alerta (Alert) notifica ante cualquier faltante de stock, tanto particular (
 |---------------------------|--------|--------|------------------|
 | `alert/{alertID}/discard` | POST   | N/A    | Alert (Singular) |
 
-| Parámetro   | Tipo    | Descripción      |
-|-------------|---------|------------------|
-| `{alertID}` | Integer | ID de la alerta. |
+| Parámetro   | Clase | Tipo    | Descripción      |
+|-------------|-------|---------|------------------|
+| `{alertID}` | Path  | Integer | ID de la alerta. |
 
 *Ejemplo*
 
 `alert/1/discard`
+
+## Historial
+
+Un Historial (History) denota una actividad en particular que se tomó en la base de datos (actualización de producto, ya sea precio o cantidad, o actualización/eliminación de listado) con información adicional como fecha y hora de la actividad.
+
+#### Búsqueda
+
+| URL            | Método | Cuerpo | Respuesta          |
+|----------------|--------|--------|--------------------|
+| `history/find` | GET    | N/A    | History (Múltiple) |
+
+| Parámetro        | Clase | Tipo      | Descripción                                |
+|------------------|-------|-----------|--------------------------------------------|
+| `historyDateMin` | Query | LocalDate | Fecha mínima de la actividad de historial. |
+| `historyDateMax` | Query | LocalDate | Fecha máxima de la actividad de historial. |
+| `historyTimeMin` | Query | LocalTime | Hora mínima de la actividad de historial.  |
+| `historyTimeMax` | Query | LocalTime | Hora máxima de la actividad de historial.  |
+
+*Ejemplo*
+
+`history/find?historyDateMin=100&entryCountMax=200`

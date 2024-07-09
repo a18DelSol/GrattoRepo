@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,5 +14,5 @@ import lombok.Setter;
 public class ModelSalePayment {
     @Id @GeneratedValue(strategy= GenerationType.AUTO) private Integer paymentID;
 
-    private String paymentName;
+    @NotBlank private String paymentName;
 }

@@ -3,9 +3,11 @@ package com.a18delsol.grattorepo.service;
 import com.a18delsol.grattorepo.model.item.ModelItem;
 import com.a18delsol.grattorepo.model.item.ModelItemAttribute;
 import com.a18delsol.grattorepo.model.item.ModelItemCompany;
+import com.a18delsol.grattorepo.model.stock.ModelStockEntry;
 import com.a18delsol.grattorepo.repository.item.RepositoryItem;
 import com.a18delsol.grattorepo.repository.item.RepositoryItemAttribute;
 import com.a18delsol.grattorepo.repository.item.RepositoryItemCompany;
+import com.a18delsol.grattorepo.repository.stock.RepositoryStockEntry;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,6 +25,8 @@ public class ServiceItem {
     @Autowired RepositoryItem          repositoryItem;
     @Autowired RepositoryItemAttribute repositoryItemAttribute;
     @Autowired RepositoryItemCompany   repositoryItemCompany;
+    @Autowired RepositoryStockEntry    repositoryStockEntry;
+    @Autowired ServiceHistory          serviceHistory;
 
     public ResponseEntity<ModelItem> itemGetOne(Integer itemID) {
         return new ResponseEntity<>(repositoryItem.findById(itemID).orElseThrow(RuntimeException::new), HttpStatus.OK);
@@ -41,6 +45,9 @@ public class ServiceItem {
     public ResponseEntity<Iterable<ModelItem>> itemCreate(Iterable<ModelItem> item) {
         for (ModelItem a : item) {
             repositoryItem.save(a);
+            serviceHistory.historyCreate(String.format("[Producto] Creación (%s [%s])",
+                    a.getItemName(),
+                    a.getItemCode()));
         }
 
         return new ResponseEntity<>(repositoryItem.findAll(), HttpStatus.OK);
@@ -50,6 +57,9 @@ public class ServiceItem {
         ModelItem item = repositoryItem.findById(itemID).orElseThrow(RuntimeException::new);
 
         repositoryItem.delete(item);
+        serviceHistory.historyCreate(String.format("[Producto] Eliminación (%s [%s])",
+                item.getItemName(),
+                item.getItemCode()));
 
         return new ResponseEntity<>("Delete OK.", HttpStatus.OK);
     }
@@ -60,6 +70,35 @@ public class ServiceItem {
         ObjectMapper objectMapper = new ObjectMapper();
 
         return new ResponseEntity<>(objectMapper.treeToValue(patch.apply(objectMapper.convertValue(item, JsonNode.class)), ModelItem.class), HttpStatus.OK);
+    }
+
+    //========================================================================
+
+    public ResponseEntity<String> itemUpdateCount(Integer itemID, Integer itemCount) {
+        ModelItem item = repositoryItem.findById(itemID).orElseThrow(RuntimeException::new);
+        Integer oldCount = item.getItemCount();
+        Integer newCount = oldCount + itemCount;
+
+        if (newCount < 0) {
+            newCount = 0;
+        }
+
+        for (ModelStockEntry a : item.getItemEntry()) {
+            if (a.getEntryCount() > newCount) {
+                a.setEntryCount(newCount);
+                repositoryStockEntry.save(a);
+            }
+        }
+
+        item.setItemCount(newCount);
+        repositoryItem.save(item);
+        serviceHistory.historyCreate(String.format("[Producto] Actualización (%s [%s], stock anterior: %d, stock actual: %d)",
+                item.getItemName(),
+                item.getItemCode(),
+                oldCount,
+                newCount));
+
+        return new ResponseEntity<>("Update OK.", HttpStatus.OK);
     }
 
     //========================================================================

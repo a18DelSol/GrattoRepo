@@ -1,6 +1,5 @@
 package com.a18delsol.grattorepo.service;
 
-import com.a18delsol.grattorepo.model.alert.ModelAlert;
 import com.a18delsol.grattorepo.model.item.ModelItem;
 import com.a18delsol.grattorepo.model.sale.ModelSale;
 import com.a18delsol.grattorepo.model.sale.ModelSaleOrder;
@@ -247,8 +246,6 @@ public class ServiceSale {
 
     public ResponseEntity<ModelSale> saleBuy(ModelSale sale) {
         Float salePrice = 0.0F;
-        LocalDate saleDate = LocalDate.now();
-        LocalTime saleTime = LocalTime.now();
 
         for (ModelSaleOrder a : sale.getSaleOrder()) {
             ModelStockEntry stockEntry = repositoryStockEntry.findById(a.getOrderEntry().getEntryID()).orElseThrow(RuntimeException::new);
@@ -258,28 +255,18 @@ public class ServiceSale {
             Integer newCount = entryItem.getItemCount() - a.getOrderAmount();
 
             if (newEntry <= 5) {
-                ModelAlert newAlert = new ModelAlert();
-                newAlert.setAlertText(String.format("[Listado] El producto %s (%s) en la ubicación (%s) tiene una baja cantidad de disponibilidad (cantidad actual: %d)",
+                serviceAlert.alertCreate(String.format("[Listado] El producto %s (%s) en la ubicación (%s) tiene una baja cantidad de disponibilidad (cantidad actual: %d)",
                         entryItem.getItemName(),
                         entryItem.getItemCode(),
                         stockEntry.getEntryStock().getStockName(),
                         newEntry));
-                newAlert.setAlertDate(saleDate);
-                newAlert.setAlertTime(saleTime);
-                newAlert.setAlertSeen(false);
-                serviceAlert.alertCreate(newAlert);
             }
 
             if (newCount <= 5) {
-                ModelAlert newAlert = new ModelAlert();
-                newAlert.setAlertText(String.format("[General] El producto %s (%s) tiene una baja cantidad de disponibilidad (cantidad actual: %d)",
+                serviceAlert.alertCreate(String.format("[General] El producto %s (%s) tiene una baja cantidad de disponibilidad (cantidad actual: %d)",
                         entryItem.getItemName(),
                         entryItem.getItemCode(),
                         newCount));
-                newAlert.setAlertDate(saleDate);
-                newAlert.setAlertTime(saleTime);
-                newAlert.setAlertSeen(false);
-                serviceAlert.alertCreate(newAlert);
             }
 
             salePrice += newPrice;
@@ -294,16 +281,11 @@ public class ServiceSale {
             for (ModelStockEntry e : entryItem.getItemEntry()) {
                 if (e.getEntryCount() > newCount) {
                     if (newCount <= 5) {
-                        ModelAlert newAlert = new ModelAlert();
-                        newAlert.setAlertText(String.format("[Listado] El producto %s (%s) en la ubicación (%s) tiene una baja cantidad de disponibilidad (cantidad actual: %d)",
+                        serviceAlert.alertCreate(String.format("[Listado] El producto %s (%s) en la ubicación (%s) tiene una baja cantidad de disponibilidad (cantidad actual: %d)",
                                 entryItem.getItemName(),
                                 entryItem.getItemCode(),
                                 e.getEntryStock().getStockName(),
                                 newEntry));
-                        newAlert.setAlertDate(saleDate);
-                        newAlert.setAlertTime(saleTime);
-                        newAlert.setAlertSeen(false);
-                        serviceAlert.alertCreate(newAlert);
                     }
 
                     e.setEntryCount(newCount);
@@ -314,8 +296,8 @@ public class ServiceSale {
 
         sale.setSalePrice(salePrice);
         sale.setSaleChange(sale.getSaleAmount() - salePrice);
-        sale.setSaleDate(saleDate);
-        sale.setSaleTime(saleTime);
+        sale.setSaleDate(LocalDate.now());
+        sale.setSaleTime(LocalTime.now());
         repositorySale.save(sale);
 
         return new ResponseEntity<>(sale, HttpStatus.OK);

@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Optional;
 
 @Service
@@ -40,8 +42,14 @@ public class ServiceAlert {
         return new ResponseEntity<>(repositoryAlert.findAll(), HttpStatus.OK);
     }
 
-    public void alertCreate(ModelAlert alert) {
-        repositoryAlert.save(alert);
+    public void alertCreate(String alertText) {
+        ModelAlert newAlert = new ModelAlert();
+        newAlert.setAlertText(alertText);
+        newAlert.setAlertDate(LocalDate.now());
+        newAlert.setAlertTime(LocalTime.now());
+        newAlert.setAlertSeen(false);
+
+        repositoryAlert.save(newAlert);
     }
 
     public ResponseEntity<String> alertDelete(Integer alertID) {
