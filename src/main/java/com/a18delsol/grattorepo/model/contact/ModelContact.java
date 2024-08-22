@@ -1,12 +1,13 @@
 package com.a18delsol.grattorepo.model.contact;
 
-import com.a18delsol.grattorepo.model.item.ModelItemCompany;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.Set;
 
 @Getter
 @Setter
@@ -17,5 +18,7 @@ public class ModelContact {
     @NotBlank private String contactName;
     private String contactMail;
     private String contactCall;
-    @ManyToMany private Set<ModelItemCompany> contactCompany;
+    @NotNull private Boolean contactProvider;
+    //@ManyToMany private Set<ModelItem>        contactItem;
+    //@ManyToMany private Set<ModelItemCompany> contactCompany;
 }

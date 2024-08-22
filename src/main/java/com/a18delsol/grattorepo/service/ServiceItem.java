@@ -38,19 +38,20 @@ public class ServiceItem {
 
     public ResponseEntity<Iterable<ModelItem>> itemFind(
         Optional<String> itemName,
-        Optional<String> itemCode) {
-        return new ResponseEntity<>(repositoryItem.findItem(itemName, itemCode), HttpStatus.OK);
+        Optional<String> itemCode,
+        Optional<Integer> itemCountMin,
+        Optional<Integer> itemCountMax) {
+        return new ResponseEntity<>(repositoryItem.findItem(itemName, itemCode, itemCountMin, itemCountMax), HttpStatus.OK);
     }
 
-    public ResponseEntity<Iterable<ModelItem>> itemCreate(Iterable<ModelItem> item) {
-        for (ModelItem a : item) {
-            repositoryItem.save(a);
-            serviceHistory.historyCreate(String.format("[Producto] Creación (%s [%s])",
-                    a.getItemName(),
-                    a.getItemCode()));
-        }
+    public ResponseEntity<String> itemCreate(ModelItem item) {
+        repositoryItem.save(item);
+        serviceHistory.historyCreate(String.format("[Producto] Creación (%s [%s])",
+                item.getItemName(),
+                item.getItemCode()
+        ));
 
-        return new ResponseEntity<>(repositoryItem.findAll(), HttpStatus.OK);
+        return new ResponseEntity<>("Creation OK.", HttpStatus.OK);
     }
 
     public ResponseEntity<String> itemDelete(Integer itemID) {
@@ -59,7 +60,8 @@ public class ServiceItem {
         repositoryItem.delete(item);
         serviceHistory.historyCreate(String.format("[Producto] Eliminación (%s [%s])",
                 item.getItemName(),
-                item.getItemCode()));
+                item.getItemCode()
+        ));
 
         return new ResponseEntity<>("Delete OK.", HttpStatus.OK);
     }
@@ -96,7 +98,8 @@ public class ServiceItem {
                 item.getItemName(),
                 item.getItemCode(),
                 oldCount,
-                newCount));
+                newCount
+        ));
 
         return new ResponseEntity<>("Update OK.", HttpStatus.OK);
     }
@@ -118,12 +121,10 @@ public class ServiceItem {
         return new ResponseEntity<>(repositoryItemAttribute.findItemAttribute(itemAttributeName), HttpStatus.OK);
     }
 
-    public ResponseEntity<Iterable<ModelItemAttribute>> itemAttributeCreate(Iterable<ModelItemAttribute> itemAttribute) {
-        for (ModelItemAttribute a : itemAttribute) {
-            repositoryItemAttribute.save(a);
-        }
+    public ResponseEntity<String> itemAttributeCreate(ModelItemAttribute itemAttribute) {
+        repositoryItemAttribute.save(itemAttribute);
 
-        return new ResponseEntity<>(repositoryItemAttribute.findAll(), HttpStatus.OK);
+        return new ResponseEntity<>("Creation OK.", HttpStatus.OK);
     }
 
     public ResponseEntity<String> itemAttributeDelete(Integer itemAttributeID) {
@@ -159,12 +160,10 @@ public class ServiceItem {
         return new ResponseEntity<>(repositoryItemCompany.findItemCompany(itemCompanyName), HttpStatus.OK);
     }
 
-    public ResponseEntity<Iterable<ModelItemCompany>> itemCompanyCreate(Iterable<ModelItemCompany> itemCompany) {
-        for (ModelItemCompany a : itemCompany) {
-            repositoryItemCompany.save(a);
-        }
+    public ResponseEntity<String> itemCompanyCreate(ModelItemCompany itemCompany) {
+        repositoryItemCompany.save(itemCompany);
 
-        return new ResponseEntity<>(repositoryItemCompany.findAll(), HttpStatus.OK);
+        return new ResponseEntity<>("Creation OK.", HttpStatus.OK);
     }
 
     public ResponseEntity<String> itemCompanyDelete(Integer itemCompanyID) {

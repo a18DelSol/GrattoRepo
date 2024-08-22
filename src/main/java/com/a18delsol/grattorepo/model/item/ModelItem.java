@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,8 +19,10 @@ public class ModelItem {
 
     @NotBlank private String  itemName;
     @NotBlank private String  itemCode;
-    @Min(0)   private Integer itemCount;
+    @NotNull @Min(0) private Integer itemCount;
+    @NotNull @Min(0) private Integer itemAlert;
     @ManyToMany private Set<ModelItemAttribute> itemAttribute;
     @ManyToOne  private ModelItemCompany        itemCompany;
-    @OneToMany(mappedBy = "entryItem") @JsonIgnoreProperties("entryItem") private Set<ModelStockEntry> itemEntry;
+    @OneToMany(mappedBy = "entryItem") @JsonIgnoreProperties("entryItem")
+    private Set<ModelStockEntry> itemEntry;
 }

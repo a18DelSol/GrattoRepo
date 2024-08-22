@@ -15,5 +15,5 @@ public class ModelStockEntry {
     private Integer entryCount;
     private Float   entryPrice;
     @ManyToOne @JsonIgnoreProperties("stockEntry") private ModelStock entryStock;
-    @ManyToOne @JsonIgnoreProperties("itemEntry")  private ModelItem entryItem;
+    @ManyToOne @JsonIgnoreProperties("itemEntry")  private ModelItem  entryItem;
 }

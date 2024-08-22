@@ -2,28 +2,15 @@
 
 Esta documentación está orientada hacia el uso cotidiano de la REST API del sistema de venta/compra. No es una documentación exhaustiva de la API, sino la documentación de su utilización de uso general desde el front-end.
 
-## Estructura general
-
-Cada controlador relacionado con un modelo (Tienda, Producto, etc.) siempre dispone de un endpoint para recibir cada instancia del modelo en la base de datos, como para crear, o eliminar, una instancia. Solo está listada la creación general y algún que otro endpoint que requiera más detalle.
-
-| URL                   | Método | Cuerpo               | Respuesta         |
-|-----------------------|--------|----------------------|-------------------|
-| `{modelo}/{modeloID}` | GET    | N/A                  | Modelo (Singular) |
-| `{modelo}/`           | GET    | N/A                  | Modelo (Múltiple) |
-| `{modelo}/find`       | GET    | N/A                  | Modelo (Múltiple) |
-| `{modelo}/`           | POST   | Modelo (Múltiple)    | Modelo (Múltiple) |
-| `{modelo}/{modeloID}` | DELETE | N/A                  | String            |
-| `{modelo}/{modeloID}` | PATCH  | JSONPATCH (Singular) | Modelo (Singular) |
-
 #### Método PATCH
 
 Para aplicar el método PATCH a algún objeto, se requiere seguir el siguiente formato en el cuerpo del Request;
 
 ```json
 {
-  "op": "replace",
-  "path": "/{atributo}",
-  "value": "{valorNuevo}"
+    "op": "replace",
+    "path": "/{atributo}",
+    "value": "{valorNuevo}"
 }
 ```
 
@@ -32,23 +19,29 @@ Este ejemplo remplaza el valor de "atributo" con el valor "valorNuevo". Para má
 ## Tienda
 Una Tienda (internamente "Stock") es un punto de venta que dispone de un nombre y una colección de tipo Listado  ("StockEntry") el que se encarga de enlistar qué producto vende la tienda, a qué precio, y cuánto stock dispone del mismo.
 
+#### General
+
+| URL          | Método | Cuerpo               | Respuesta         |
+|--------------|--------|----------------------|-------------------|
+| `stock/{ID}` | GET    | N/A                  | Modelo (Singular) |
+| `stock/`     | GET    | N/A                  | Modelo (Múltiple) |
+| `stock/find` | GET    | N/A                  | Modelo (Múltiple) |
+| `stock/`     | POST   | Modelo (Singular)    | Modelo (Singular) |
+| `stock/{ID}` | DELETE | N/A                  | String            |
+| `stock/{ID}` | PATCH  | JSONPATCH (Singular) | Modelo (Singular) |
+
 #### Creación
 
 | URL      | Método | Cuerpo           | Respuesta        |
 |----------|--------|------------------|------------------|
-| `stock/` | POST   | Stock (Múltiple) | Stock (Múltiple) |
+| `stock/` | POST   | Stock (Singular) | Stock (Singular) |
 
 *Ejemplo*
 
 ```json
-[
-  {
+{
     "stockName": "Tienda Ituzaingo"
-  },
-  {
-    "stockName": "Tienda Moron"
-  }
-]
+}
 ```
 
 #### Búsqueda
@@ -74,19 +67,14 @@ Un Producto ("Item") es un producto que dispone de un nombre, un código SKU, un
 
 | URL              | Método | Cuerpo                   | Respuesta                |
 |------------------|--------|--------------------------|--------------------------|
-| `item/attribute` | POST   | ItemAttribute (Múltiple) | ItemAttribute (Múltiple) |
+| `item/attribute` | POST   | ItemAttribute (Singular) | ItemAttribute (Singular) |
 
 *Ejemplo*
 
 ```json
-[
-  {
+{
     "attributeName": "Bebida"
-  },
-  {
-    "attributeName": "Accesorio"
-  }
-]
+}
 ```
 
 ### Compañía
@@ -95,43 +83,43 @@ Un Producto ("Item") es un producto que dispone de un nombre, un código SKU, un
 
 | URL            | Método | Cuerpo                 | Respuesta              |
 |----------------|--------|------------------------|------------------------|
-| `item/company` | POST   | ItemCompany (Múltiple) | ItemCompany (Múltiple) |
+| `item/company` | POST   | ItemCompany (Singular) | ItemCompany (Singular) |
 
 *Ejemplo*
 
 ```json
-[
-  {
+{
     "companyName": "Trumpeter"
-  },
-  {
-    "companyName": "Rutini"
-  },
-  {
-    "companyName": "La Celia"
-  },
-  {
-    "companyName": "Fernet & Co."
-  }
-]
+}
 ```
 
 ### Producto
+
+#### General
+
+| URL         | Método | Cuerpo               | Respuesta         |
+|-------------|--------|----------------------|-------------------|
+| `item/{ID}` | GET    | N/A                  | Modelo (Singular) |
+| `item/`     | GET    | N/A                  | Modelo (Múltiple) |
+| `item/find` | GET    | N/A                  | Modelo (Múltiple) |
+| `item/`     | POST   | Modelo (Singular)    | Modelo (Singular) |
+| `item/{ID}` | DELETE | N/A                  | String            |
+| `item/{ID}` | PATCH  | JSONPATCH (Singular) | Modelo (Singular) |
 
 #### Creación
 
 | URL     | Método | Cuerpo          | Respuesta       |
 |---------|--------|-----------------|-----------------|
-| `item/` | POST   | Item (Múltiple) | Item (Múltiple) |
+| `item/` | POST   | Item (Singular) | Item (Singular) |
 
 *Ejemplo*
 
 ```json
-[
-  {
+{
     "itemName": "Vino Malbec Trumpeter",
     "itemCode": "MAL-TRU",
     "itemCount": 12,
+    "itemAlert": 5,
     "itemAttribute":
     [
       {
@@ -142,8 +130,7 @@ Un Producto ("Item") es un producto que dispone de un nombre, un código SKU, un
     {
       "companyID": 1
     }
-  }
-]
+}
 ```
 
 #### Búsqueda
@@ -183,17 +170,27 @@ Permite actualizar la cantidad de un producto. Funciona como una diferencia (e.j
 ## Listado
 Un Listado ("StockEntry") se ocupa de conectar un Producto y una Tienda, agregando información adicional como por cuánto se vende el Producto y cuánto de ese producto hay para esa Tienda.
 
+#### General
+
+| URL                | Método | Cuerpo               | Respuesta         |
+|--------------------|--------|----------------------|-------------------|
+| `stock/entry/{ID}` | GET    | N/A                  | Modelo (Singular) |
+| `stock/entry/`     | GET    | N/A                  | Modelo (Múltiple) |
+| `stock/entry/find` | GET    | N/A                  | Modelo (Múltiple) |
+| `stock/entry/`     | POST   | Modelo (Singular)    | Modelo (Singular) |
+| `stock/entry/{ID}` | DELETE | N/A                  | String            |
+| `stock/entry/{ID}` | PATCH  | JSONPATCH (Singular) | Modelo (Singular) |
+
 #### Creación
 
 | URL           | Método | Cuerpo                | Respuesta             |
 |---------------|--------|-----------------------|-----------------------|
-| `stock/entry` | POST   | StockEntry (Múltiple) | StockEntry (Múltiple) |
+| `stock/entry` | POST   | StockEntry (Singular) | StockEntry (Singular) |
 
 *Ejemplo*
 
 ```json
-[
-  {
+{
     "entryCount": 10,
     "entryPrice": 100.0,
     "entryItem":
@@ -204,8 +201,7 @@ Un Listado ("StockEntry") se ocupa de conectar un Producto y una Tienda, agregan
     {
       "stockID": 1
     }
-  }
-]
+}
 ```
 
 #### Búsqueda
@@ -278,10 +274,7 @@ Una Compra ("Sale") describe la venta de un Listado (o mas), agregando informaci
 
 ```json
 {
-  "salePayment":
-  {
-    "paymentID": 1
-  },
+  "salePayment": "MP",
   "saleAmount": 10000.0,
   "saleName": "Fulanito Menganito",
   "saleMail": "fulanitomenganito@mail.com",
@@ -314,10 +307,12 @@ Una Compra ("Sale") describe la venta de un Listado (o mas), agregando informaci
 |-------------|--------|--------|-----------------|
 | `sale/find` | GET    | N/A    | Sale (Múltiple) |
 
-| Parámetro      | Clase | Tipo  | Descripción                |
-|----------------|-------|-------|----------------------------|
-| `salePriceMin` | Query | Float | Precio mínimo de la venta. |
-| `salePriceMax` | Query | Float | Precio máximo de la venta. |
+| Parámetro      | Clase | Tipo      | Descripción                |
+|----------------|-------|-----------|----------------------------|
+| `salePriceMin` | Query | Float     | Precio mínimo de la venta. |
+| `salePriceMax` | Query | Float     | Precio máximo de la venta. |
+| `saleDateMin`  | Query | LocalDate | Fecha mínima de la venta.  |
+| `saleDateMax`  | Query | LocalDate | Fecha máxima de la venta.  |
 
 *Ejemplo*
 
@@ -329,10 +324,11 @@ Una Compra ("Sale") describe la venta de un Listado (o mas), agregando informaci
 |---------------|--------|--------|---------------------|
 | `sale/report` | GET    | N/A    | Archivo Excel .xlsx |
 
-| Parámetro     | Clase | Tipo      | Descripción                                         |
-|---------------|-------|-----------|-----------------------------------------------------|
-| `saleDateMin` | Query | LocalDate | Piso del intervalo de tiempo del reporte de ventas. |
-| `saleDateMax` | Query | LocalDate | Tope del intervalo de tiempo del reporte de ventas. |
+| Parámetro     | Clase | Tipo      | Descripción                                          |
+|---------------|-------|-----------|------------------------------------------------------|
+| `saleDateMin` | Query | LocalDate | Piso del intervalo de tiempo del reporte de ventas.  |
+| `saleDateMax` | Query | LocalDate | Tope del intervalo de tiempo del reporte de ventas.  |
+| `salePath`    | Query | String    | La ubicación en donde se debería guardar el archivo. |
 
 *Ejemplo*
 
@@ -341,17 +337,27 @@ Una Compra ("Sale") describe la venta de un Listado (o mas), agregando informaci
 ## Contacto
 Un Contacto ("Contact") describe un contacto, que está asociado a una Compañía, con nombre, teléfono, y correo del contacto.
 
+#### General
+
+| URL            | Método | Cuerpo               | Respuesta         |
+|----------------|--------|----------------------|-------------------|
+| `contact/{ID}` | GET    | N/A                  | Modelo (Singular) |
+| `contact/`     | GET    | N/A                  | Modelo (Múltiple) |
+| `contact/find` | GET    | N/A                  | Modelo (Múltiple) |
+| `contact/`     | POST   | Modelo (Singular)    | Modelo (Singular) |
+| `contact/{ID}` | DELETE | N/A                  | String            |
+| `contact/{ID}` | PATCH  | JSONPATCH (Singular) | Modelo (Singular) |
+
 #### Creación
 
 | URL        | Método | Cuerpo             | Respuesta          |
 |------------|--------|--------------------|--------------------|
-| `contact/` | POST   | Contact (Múltiple) | Contact (Múltiple) |
+| `contact/` | POST   | Contact (Singular) | Contact (Singular) |
 
 *Ejemplo*
 
 ```json
-[
-  {
+{
     "contactName": "Distribuidora Lo' Cra' S.A.",
     "contactMail": "andarásbienporla66@mail.com",
     "contactCall": "9999-1111",
@@ -364,22 +370,7 @@ Un Contacto ("Contact") describe un contacto, que está asociado a una Compañí
         "companyID" : 2
       }
     ]
-  },
-  {
-    "contactName": "Distribuidora Vino-Mania",
-    "contactMail": "adondevauncolor@mail.com",
-    "contactCall": "1111-9999",
-    "contactCompany":
-    [
-      {
-        "companyID" : 3
-      },
-      {
-        "companyID" : 4
-      }
-    ]
-  }
-]
+}
 ```
 
 #### Búsqueda
@@ -434,4 +425,4 @@ Un Historial (History) denota una actividad en particular que se tomó en la bas
 
 *Ejemplo*
 
-`history/find?historyDateMin=100&entryCountMax=200`
+`history/find?historyDateMin=2024-03-10&historyDateMax=2024-03-12`

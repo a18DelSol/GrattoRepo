@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 @Controller
@@ -30,8 +31,11 @@ public class ControllerHistory {
 
     @GetMapping(path="/find")
     public @ResponseBody ResponseEntity<Iterable<ModelHistory>> historyFind(
-            @RequestParam Optional<String> historyName) {
-        return service.historyFind(historyName);
+            @RequestParam Optional<LocalDate> historyDateMin,
+            @RequestParam Optional<LocalDate> historyDateMax,
+            @RequestParam Optional<LocalDate> historyTimeMin,
+            @RequestParam Optional<LocalDate> historyTimeMax) {
+        return service.historyFind(historyDateMin, historyDateMax, historyTimeMin, historyTimeMax);
     }
 
     @PostMapping(path = "/")

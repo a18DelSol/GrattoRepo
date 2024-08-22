@@ -6,6 +6,7 @@ import com.a18delsol.grattorepo.service.ServiceUser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -37,7 +38,7 @@ public class ControllerUser {
     }
 
     @PostMapping(path = "/")
-    public @ResponseBody ResponseEntity<Iterable<ModelUser>> userCreate(@RequestBody Iterable<ModelUser> user) {
+    public @ResponseBody ResponseEntity<ModelUser> userCreate(@RequestBody @Valid ModelUser user) {
         return service.userCreate(user);
     }
 
@@ -84,7 +85,7 @@ public class ControllerUser {
     }
 
     @PostMapping(path = "/attribute")
-    public @ResponseBody ResponseEntity<Iterable<ModelUserAttribute>> userAttributeCreate(@RequestBody Iterable<ModelUserAttribute> userAttribute) {
+    public @ResponseBody ResponseEntity<ModelUserAttribute> userAttributeCreate(@RequestBody @Valid ModelUserAttribute userAttribute) {
         return service.userAttributeCreate(userAttribute);
     }
 

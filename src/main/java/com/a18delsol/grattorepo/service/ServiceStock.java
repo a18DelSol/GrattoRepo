@@ -43,20 +43,22 @@ public class ServiceStock {
         return new ResponseEntity<>(repositoryStock.findStock(stockName), HttpStatus.OK);
     }
 
-    public ResponseEntity<Iterable<ModelStock>> stockCreate(Iterable<ModelStock> stock) {
-        for (ModelStock a : stock) {
-            repositoryStock.save(a);
-            serviceHistory.historyCreate(String.format("[Stock] Creación (%s)", a.getStockName()));
-        }
+    public ResponseEntity<String> stockCreate(ModelStock stock) {
+        repositoryStock.save(stock);
+        serviceHistory.historyCreate(String.format("[Stock] Creación (%s)",
+                stock.getStockName()
+        ));
 
-        return new ResponseEntity<>(repositoryStock.findAll(), HttpStatus.OK);
+        return new ResponseEntity<>("Creation OK.", HttpStatus.OK);
     }
 
     public ResponseEntity<String> stockDelete(Integer stockID) {
         ModelStock stock = repositoryStock.findById(stockID).orElseThrow(RuntimeException::new);
 
         repositoryStock.delete(stock);
-        serviceHistory.historyCreate(String.format("[Stock] Eliminación (%s)", stock.getStockName()));
+        serviceHistory.historyCreate(String.format("[Stock] Eliminación (%s)",
+                stock.getStockName()
+        ));
 
         return new ResponseEntity<>("Delete OK.", HttpStatus.OK);
     }
@@ -89,20 +91,19 @@ public class ServiceStock {
         return new ResponseEntity<>(repositoryStockEntry.findStockEntry(entryCountMin, entryCountMax, entryPriceMin, entryPriceMax), HttpStatus.OK);
     }
 
-    public ResponseEntity<Iterable<ModelStockEntry>> stockEntryCreate(Iterable<ModelStockEntry> stockEntry) {
-        for (ModelStockEntry a : stockEntry) {
-            repositoryStockEntry.save(a);
+    public ResponseEntity<String> stockEntryCreate(ModelStockEntry stockEntry) {
+        repositoryStockEntry.save(stockEntry);
 
-            ModelStock historyStock = repositoryStock.findById(a.getEntryStock().getStockID()).orElseThrow(RuntimeException::new);
-            ModelItem  historyItem  = repositoryItem.findById(a.getEntryItem().getItemID()).orElseThrow(RuntimeException::new);
+        ModelStock historyStock = repositoryStock.findById(stockEntry.getEntryStock().getStockID()).orElseThrow(RuntimeException::new);
+        ModelItem  historyItem  = repositoryItem.findById(stockEntry.getEntryItem().getItemID()).orElseThrow(RuntimeException::new);
 
-            serviceHistory.historyCreate(String.format("[Listado] Creación (%s : %s [%s])",
-                    historyStock.getStockName(),
-                    historyItem.getItemName(),
-                    historyItem.getItemCode()));
-        }
+        serviceHistory.historyCreate(String.format("[Listado] Creación (%s : %s [%s])",
+                historyStock.getStockName(),
+                historyItem.getItemName(),
+                historyItem.getItemCode()
+        ));
 
-        return new ResponseEntity<>(repositoryStockEntry.findAll(), HttpStatus.OK);
+        return new ResponseEntity<>("Creation OK.", HttpStatus.OK);
     }
 
     public ResponseEntity<String> stockEntryDelete(Integer stockEntryID) {
@@ -112,7 +113,8 @@ public class ServiceStock {
         serviceHistory.historyCreate(String.format("[Listado] Eliminación (%s : %s [%s])",
                 stockEntry.getEntryStock().getStockName(),
                 stockEntry.getEntryItem().getItemName(),
-                stockEntry.getEntryItem().getItemCode()));
+                stockEntry.getEntryItem().getItemCode()
+        ));
 
         return new ResponseEntity<>("Delete OK.", HttpStatus.OK);
     }
@@ -145,7 +147,8 @@ public class ServiceStock {
                 stockEntry.getEntryItem().getItemName(),
                 stockEntry.getEntryItem().getItemCode(),
                 oldCount,
-                newCount));
+                newCount
+        ));
 
         return new ResponseEntity<>("Update OK.", HttpStatus.OK);
     }
@@ -166,7 +169,8 @@ public class ServiceStock {
                 stockEntry.getEntryItem().getItemName(),
                 stockEntry.getEntryItem().getItemCode(),
                 oldPrice,
-                newPrice));
+                newPrice
+        ));
 
         return new ResponseEntity<>("Update OK.", HttpStatus.OK);
     }

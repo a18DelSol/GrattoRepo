@@ -4,6 +4,7 @@ import com.a18delsol.grattorepo.model.item.ModelItem;
 import com.a18delsol.grattorepo.model.item.ModelItemAttribute;
 import com.a18delsol.grattorepo.model.item.ModelItemCompany;
 import com.a18delsol.grattorepo.service.ServiceItem;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -30,12 +31,14 @@ public class ControllerItem {
     @GetMapping(path="/find")
     public @ResponseBody ResponseEntity<Iterable<ModelItem>> itemFind(
         @RequestParam Optional<String> itemName,
-        @RequestParam Optional<String> itemCode) {
-        return service.itemFind(itemName, itemCode);
+        @RequestParam Optional<String> itemCode,
+        @RequestParam Optional<Integer> itemCountMin,
+        @RequestParam Optional<Integer> itemCountMax) {
+        return service.itemFind(itemName, itemCode, itemCountMin, itemCountMax);
     }
 
     @PostMapping(path = "/")
-    public @ResponseBody ResponseEntity<Iterable<ModelItem>> itemCreate(@RequestBody Iterable<ModelItem> item) {
+    public @ResponseBody ResponseEntity<String> itemCreate(@RequestBody @Valid ModelItem item) {
         return service.itemCreate(item);
     }
 
@@ -72,7 +75,7 @@ public class ControllerItem {
     }
 
     @PostMapping(path = "/attribute")
-    public @ResponseBody ResponseEntity<Iterable<ModelItemAttribute>> itemAttributeCreate(@RequestBody Iterable<ModelItemAttribute> itemAttribute) {
+    public @ResponseBody ResponseEntity<String> itemAttributeCreate(@Valid @RequestBody ModelItemAttribute itemAttribute) {
         return service.itemAttributeCreate(itemAttribute);
     }
 
@@ -102,7 +105,7 @@ public class ControllerItem {
     }
 
     @PostMapping(path = "/company")
-    public @ResponseBody ResponseEntity<Iterable<ModelItemCompany>> itemCompanyCreate(@RequestBody Iterable<ModelItemCompany> itemCompany) {
+    public @ResponseBody ResponseEntity<String> itemCompanyCreate(@Valid @RequestBody ModelItemCompany itemCompany) {
         return service.itemCompanyCreate(itemCompany);
     }
 

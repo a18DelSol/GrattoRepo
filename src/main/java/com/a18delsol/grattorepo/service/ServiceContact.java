@@ -34,16 +34,10 @@ public class ServiceContact {
         return new ResponseEntity<>(repositoryContact.findContact(contactName, contactMail, contactCall), HttpStatus.OK);
     }
 
-    public ResponseEntity<Iterable<ModelContact>> contactCreate(Iterable<ModelContact> contact) {
-        for (ModelContact a : contact) {
-            repositoryContact.save(a);
-        }
-
-        return new ResponseEntity<>(repositoryContact.findAll(), HttpStatus.OK);
-    }
-
-    public void contactCreate(ModelContact contact) {
+    public ResponseEntity<String> contactCreate(ModelContact contact) {
         repositoryContact.save(contact);
+
+        return new ResponseEntity<>("Creation OK.", HttpStatus.OK);
     }
 
     public ResponseEntity<String> contactDelete(Integer contactID) {

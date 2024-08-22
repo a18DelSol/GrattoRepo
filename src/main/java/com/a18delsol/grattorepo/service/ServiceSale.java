@@ -3,12 +3,12 @@ package com.a18delsol.grattorepo.service;
 import com.a18delsol.grattorepo.model.item.ModelItem;
 import com.a18delsol.grattorepo.model.sale.ModelSale;
 import com.a18delsol.grattorepo.model.sale.ModelSaleOrder;
-import com.a18delsol.grattorepo.model.sale.ModelSalePayment;
+import com.a18delsol.grattorepo.model.sale.ModelSaleUpdate;
 import com.a18delsol.grattorepo.model.stock.ModelStockEntry;
 import com.a18delsol.grattorepo.repository.item.RepositoryItem;
 import com.a18delsol.grattorepo.repository.sale.RepositorySale;
 import com.a18delsol.grattorepo.repository.sale.RepositorySaleOrder;
-import com.a18delsol.grattorepo.repository.sale.RepositorySalePayment;
+import com.a18delsol.grattorepo.repository.sale.RepositorySaleUpdate;
 import com.a18delsol.grattorepo.repository.stock.RepositoryStockEntry;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -28,16 +28,18 @@ import java.io.FileOutputStream;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class ServiceSale {
-    @Autowired RepositorySale        repositorySale;
-    @Autowired RepositorySaleOrder   repositorySaleOrder;
-    @Autowired RepositorySalePayment repositorySalePayment;
-    @Autowired RepositoryStockEntry  repositoryStockEntry;
-    @Autowired RepositoryItem        repositoryItem;
-    @Autowired ServiceAlert          serviceAlert;
+    @Autowired RepositorySale       repositorySale;
+    @Autowired RepositorySaleOrder  repositorySaleOrder;
+    @Autowired RepositorySaleUpdate repositorySaleUpdate;
+    @Autowired RepositoryStockEntry repositoryStockEntry;
+    @Autowired RepositoryItem       repositoryItem;
+    @Autowired ServiceAlert         serviceAlert;
 
     public ResponseEntity<ModelSale> saleGetOne(Integer saleID) {
         return new ResponseEntity<>(repositorySale.findById(saleID).orElseThrow(RuntimeException::new), HttpStatus.OK);
@@ -81,7 +83,7 @@ public class ServiceSale {
 
     //========================================================================
 
-    public ResponseEntity<String> saleReport(Optional<LocalDate> saleDateMin, Optional<LocalDate> saleDateMax) {
+    public ResponseEntity<String> saleReport(Optional<LocalDate> saleDateMin, Optional<LocalDate> saleDateMax, Optional<String> salePath) {
         Workbook workbook = new XSSFWorkbook();
 
         Sheet sheet = workbook.createSheet("General");
@@ -138,7 +140,7 @@ public class ServiceSale {
         style.setWrapText(false);
 
         Iterable<ModelSale> array = repositorySale.findSale(null, null, saleDateMin, saleDateMax);
-        HashMap<ModelSalePayment, Float> paymentValue = new HashMap<>();
+        HashMap<String, Float> paymentValue = new HashMap<>();
 
         Integer iterate = 1;
 
@@ -180,7 +182,7 @@ public class ServiceSale {
             cell.setCellStyle(style);
 
             cell = row.createCell(2);
-            cell.setCellValue(s.getSalePayment().getPaymentName());
+            cell.setCellValue(s.getSalePayment());
             cell.setCellStyle(style);
 
             cell = row.createCell(3);
@@ -210,11 +212,11 @@ public class ServiceSale {
             iterate++;
         }
 
-        for (ModelSalePayment p : paymentValue.keySet()) {
+        for (String p : paymentValue.keySet()) {
             Row row = sheet.createRow(iterate + 1);
 
             Cell cell = row.createCell(0);
-            cell.setCellValue(String.format("%s: %s", p.getPaymentName(), paymentValue.get(p).toString()));
+            cell.setCellValue(String.format("%s: %s", p, paymentValue.get(p).toString()));
             cell.setCellStyle(style);
 
             iterate++;
@@ -230,9 +232,15 @@ public class ServiceSale {
         sheet.autoSizeColumn(7);
         sheet.autoSizeColumn(8);
 
-        File currDir = new File(".");
-        String path = currDir.getAbsolutePath();
-        String fileLocation = path.substring(0, path.length() - 1) + "sale.xlsx";
+        String fileLocation = "";
+
+        if (salePath.isEmpty()) {
+            File currDir = new File(".");
+            String path = currDir.getAbsolutePath();
+            fileLocation = path.substring(0, path.length() - 1) + "sale_" + LocalDate.now() + "_" + LocalTime.now() + ".xlsx";
+        } else {
+            fileLocation = salePath.get() + "_" + LocalDate.now() + "_" + LocalTime.now() + ".xlsx";
+        }
 
         try {
             FileOutputStream outputStream = new FileOutputStream(fileLocation);
@@ -247,26 +255,30 @@ public class ServiceSale {
     public ResponseEntity<ModelSale> saleBuy(ModelSale sale) {
         Float salePrice = 0.0F;
 
+        Set<ModelSaleUpdate> saleUpdate = new HashSet<>();
+
         for (ModelSaleOrder a : sale.getSaleOrder()) {
             ModelStockEntry stockEntry = repositoryStockEntry.findById(a.getOrderEntry().getEntryID()).orElseThrow(RuntimeException::new);
             ModelItem entryItem = stockEntry.getEntryItem();
             Float   newPrice = stockEntry.getEntryPrice() * a.getOrderAmount();
             Integer newEntry = stockEntry.getEntryCount() - a.getOrderAmount();
             Integer newCount = entryItem.getItemCount() - a.getOrderAmount();
+            Boolean alertEntry = newEntry <= entryItem.getItemAlert();
+            Boolean alertCount = newCount <= entryItem.getItemAlert();
 
-            if (newEntry <= 5) {
+            if (alertCount) {
+                serviceAlert.alertCreate(String.format("[General] El producto %s (%s) tiene una baja cantidad de disponibilidad (cantidad actual: %d)",
+                        entryItem.getItemName(),
+                        entryItem.getItemCode(),
+                        newCount));
+            }
+
+            if (alertEntry) {
                 serviceAlert.alertCreate(String.format("[Listado] El producto %s (%s) en la ubicación (%s) tiene una baja cantidad de disponibilidad (cantidad actual: %d)",
                         entryItem.getItemName(),
                         entryItem.getItemCode(),
                         stockEntry.getEntryStock().getStockName(),
                         newEntry));
-            }
-
-            if (newCount <= 5) {
-                serviceAlert.alertCreate(String.format("[General] El producto %s (%s) tiene una baja cantidad de disponibilidad (cantidad actual: %d)",
-                        entryItem.getItemName(),
-                        entryItem.getItemCode(),
-                        newCount));
             }
 
             salePrice += newPrice;
@@ -280,13 +292,20 @@ public class ServiceSale {
 
             for (ModelStockEntry e : entryItem.getItemEntry()) {
                 if (e.getEntryCount() > newCount) {
-                    if (newCount <= 5) {
+                    if (alertEntry) {
                         serviceAlert.alertCreate(String.format("[Listado] El producto %s (%s) en la ubicación (%s) tiene una baja cantidad de disponibilidad (cantidad actual: %d)",
                                 entryItem.getItemName(),
                                 entryItem.getItemCode(),
                                 e.getEntryStock().getStockName(),
                                 newEntry));
                     }
+
+                    ModelSaleUpdate entryUpdate = new ModelSaleUpdate();
+                    entryUpdate.setUpdateCount(e.getEntryCount() - newCount);
+                    entryUpdate.setUpdateEntry(e);
+                    repositorySaleUpdate.save(entryUpdate);
+
+                    saleUpdate.add(entryUpdate);
 
                     e.setEntryCount(newCount);
                     repositoryStockEntry.save(e);
@@ -298,6 +317,7 @@ public class ServiceSale {
         sale.setSaleChange(sale.getSaleAmount() - salePrice);
         sale.setSaleDate(LocalDate.now());
         sale.setSaleTime(LocalTime.now());
+        sale.setSaleUpdate(saleUpdate);
         repositorySale.save(sale);
 
         return new ResponseEntity<>(sale, HttpStatus.OK);
@@ -317,6 +337,11 @@ public class ServiceSale {
 
             stockEntry.setEntryCount(newEntry);
             repositoryStockEntry.save(stockEntry);
+        }
+
+        for (ModelSaleUpdate u : sale.getSaleUpdate()) {
+            ModelStockEntry updateEntry = u.getUpdateEntry();
+            updateEntry.setEntryCount(updateEntry.getEntryCount() + u.getUpdateCount());
         }
 
         repositorySale.delete(sale);
@@ -364,46 +389,5 @@ public class ServiceSale {
         ObjectMapper objectMapper = new ObjectMapper();
 
         return new ResponseEntity<>(objectMapper.treeToValue(patch.apply(objectMapper.convertValue(saleOrder, JsonNode.class)), ModelSaleOrder.class), HttpStatus.OK);
-    }
-
-    //========================================================================
-    // ModelSalePayment sub-service
-    //========================================================================
-
-    public ResponseEntity<ModelSalePayment> salePaymentGetOne(Integer salePaymentID) {
-        return new ResponseEntity<>(repositorySalePayment.findById(salePaymentID).orElseThrow(RuntimeException::new), HttpStatus.OK);
-    }
-
-    public ResponseEntity<Iterable<ModelSalePayment>> salePaymentGetAll() {
-        return new ResponseEntity<>(repositorySalePayment.findAll(), HttpStatus.OK);
-    }
-
-    public ResponseEntity<Iterable<ModelSalePayment>> salePaymentFind(
-            Optional<String> paymentName) {
-        return new ResponseEntity<>(repositorySalePayment.findSalePayment(paymentName), HttpStatus.OK);
-    }
-
-    public ResponseEntity<Iterable<ModelSalePayment>> salePaymentCreate(Iterable<ModelSalePayment> salePayment) {
-        for (ModelSalePayment a : salePayment) {
-            repositorySalePayment.save(a);
-        }
-
-        return new ResponseEntity<>(repositorySalePayment.findAll(), HttpStatus.OK);
-    }
-
-    public ResponseEntity<String> salePaymentDelete(Integer salePaymentID) {
-        ModelSalePayment salePayment = repositorySalePayment.findById(salePaymentID).orElseThrow(RuntimeException::new);
-
-        repositorySalePayment.delete(salePayment);
-
-        return new ResponseEntity<>("Delete OK.", HttpStatus.OK);
-    }
-
-    public ResponseEntity<ModelSalePayment> salePaymentPatch(JsonPatch patch, Integer salePaymentID) throws JsonPatchException, JsonProcessingException {
-        ModelSalePayment salePayment = repositorySalePayment.findById(salePaymentID).orElseThrow(RuntimeException::new);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        return new ResponseEntity<>(objectMapper.treeToValue(patch.apply(objectMapper.convertValue(salePayment, JsonNode.class)), ModelSalePayment.class), HttpStatus.OK);
     }
 }

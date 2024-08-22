@@ -5,6 +5,7 @@ import com.a18delsol.grattorepo.service.ServiceContact;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -37,7 +38,7 @@ public class ControllerContact {
     }
 
     @PostMapping(path = "/")
-    public @ResponseBody ResponseEntity<Iterable<ModelContact>> contactCreate(@RequestBody Iterable<ModelContact> contact) {
+    public @ResponseBody ResponseEntity<String> contactCreate(@Valid @RequestBody ModelContact contact) {
         return service.contactCreate(contact);
     }
 

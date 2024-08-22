@@ -12,7 +12,6 @@ import com.github.fge.jsonpatch.JsonPatchException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -36,12 +35,10 @@ public class ServiceUser {
         return new ResponseEntity<>(repositoryUser.findUser(userName, userMail), HttpStatus.OK);
     }
 
-    public ResponseEntity<Iterable<ModelUser>> userCreate(Iterable<ModelUser> user) {
-        for (ModelUser a : user) {
-            repositoryUser.save(a);
-        }
+    public ResponseEntity<ModelUser> userCreate(ModelUser user) {
+        repositoryUser.save(user);
 
-        return new ResponseEntity<>(repositoryUser.findAll(), HttpStatus.OK);
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     public ResponseEntity<String> userDelete(Integer userID) {
@@ -99,12 +96,10 @@ public class ServiceUser {
         return new ResponseEntity<>(repositoryUserAttribute.findUserAttribute(userAttributeName), HttpStatus.OK);
     }
 
-    public ResponseEntity<Iterable<ModelUserAttribute>> userAttributeCreate(Iterable<ModelUserAttribute> userAttribute) {
-        for (ModelUserAttribute a : userAttribute) {
-            repositoryUserAttribute.save(a);
-        }
+    public ResponseEntity<ModelUserAttribute> userAttributeCreate(ModelUserAttribute userAttribute) {
+        repositoryUserAttribute.save(userAttribute);
 
-        return new ResponseEntity<>(repositoryUserAttribute.findAll(), HttpStatus.OK);
+        return new ResponseEntity<>(userAttribute, HttpStatus.OK);
     }
 
     public ResponseEntity<String> userAttributeDelete(Integer userAttributeID) {

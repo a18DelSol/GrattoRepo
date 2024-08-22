@@ -6,6 +6,7 @@ import com.a18delsol.grattorepo.service.ServiceStock;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -36,7 +37,7 @@ public class ControllerStock {
     }
 
     @PostMapping(path = "/")
-    public @ResponseBody ResponseEntity<Iterable<ModelStock>> stockCreate(@RequestBody Iterable<ModelStock> stock) {
+    public @ResponseBody ResponseEntity<String> stockCreate(@Valid @RequestBody ModelStock stock) {
         return service.stockCreate(stock);
     }
 
@@ -74,7 +75,7 @@ public class ControllerStock {
     }
 
     @PostMapping(path = "/entry")
-    public @ResponseBody ResponseEntity<Iterable<ModelStockEntry>> stockEntryCreate(@RequestBody Iterable<ModelStockEntry> stockEntry) {
+    public @ResponseBody ResponseEntity<String> stockEntryCreate(@Valid @RequestBody ModelStockEntry stockEntry) {
         return service.stockEntryCreate(stockEntry);
     }
 

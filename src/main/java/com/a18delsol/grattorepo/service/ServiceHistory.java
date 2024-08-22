@@ -30,8 +30,11 @@ public class ServiceHistory {
     }
 
     public ResponseEntity<Iterable<ModelHistory>> historyFind(
-            Optional<String> historyName) {
-        return new ResponseEntity<>(repositoryHistory.findHistory(historyName), HttpStatus.OK);
+            Optional<LocalDate> historyDateMin,
+            Optional<LocalDate> historyDateMax,
+            Optional<LocalDate> historyTimeMin,
+            Optional<LocalDate> historyTimeMax) {
+        return new ResponseEntity<>(repositoryHistory.findHistory(historyDateMin, historyDateMax, historyTimeMin, historyTimeMax), HttpStatus.OK);
     }
 
     public ResponseEntity<Iterable<ModelHistory>> historyCreate(Iterable<ModelHistory> history) {
