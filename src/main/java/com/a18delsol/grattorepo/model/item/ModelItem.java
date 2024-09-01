@@ -1,6 +1,8 @@
 package com.a18delsol.grattorepo.model.item;
 
+import com.a18delsol.grattorepo.model.contact.ModelContact;
 import com.a18delsol.grattorepo.model.stock.ModelStockEntry;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
@@ -15,14 +17,20 @@ import java.util.Set;
 @Setter
 @Entity
 public class ModelItem {
-    @Id @GeneratedValue(strategy= GenerationType.AUTO) private Integer itemID;
+    @Id @GeneratedValue(strategy= GenerationType.AUTO) private Integer ID;
 
-    @NotBlank private String  itemName;
-    @NotBlank private String  itemCode;
-    @NotNull @Min(0) private Integer itemCount;
-    @NotNull @Min(0) private Integer itemAlert;
-    @ManyToMany private Set<ModelItemAttribute> itemAttribute;
-    @ManyToOne  private ModelItemCompany        itemCompany;
+    @JsonIgnore private Boolean entityDelete = false;
+
+    @NotBlank            private String  itemName;
+    @NotBlank            private String  itemCode;
+    @NotNull @Min(0)     private Integer itemCount;
+    @NotNull @Min(0)     private Integer itemAlert;
+    @NotNull @ManyToMany private Set<ModelItemAttribute> itemAttribute;
+    @NotNull @ManyToOne  private ModelItemCompany        itemCompany;
+
+    @ManyToMany(mappedBy = "contactItem") @JsonIgnore
+    private Set<ModelContact> itemContact;
+
     @OneToMany(mappedBy = "entryItem") @JsonIgnoreProperties("entryItem")
     private Set<ModelStockEntry> itemEntry;
 }

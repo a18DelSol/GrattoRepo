@@ -75,7 +75,7 @@ public class ControllerStock {
     }
 
     @PostMapping(path = "/entry")
-    public @ResponseBody ResponseEntity<String> stockEntryCreate(@Valid @RequestBody ModelStockEntry stockEntry) {
+    public @ResponseBody ResponseEntity<String> stockEntryCreate(@RequestBody @Valid ModelStockEntry stockEntry) {
         return service.stockEntryCreate(stockEntry);
     }
 
@@ -103,7 +103,7 @@ public class ControllerStock {
     }
 
     @GetMapping(path="/entry/report")
-    public @ResponseBody ResponseEntity<String> stockEntryReport() {
-        return service.stockEntryReport();
+    public @ResponseBody ResponseEntity<String> stockEntryReport(@RequestParam Optional<String> reportPath) {
+        return service.stockEntryReport(reportPath);
     }
 }

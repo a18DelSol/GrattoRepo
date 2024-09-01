@@ -8,9 +8,12 @@ import java.util.Optional;
 
 public interface RepositoryStock extends CrudRepository<ModelStock, Integer> {
     ModelStock findByStockName(String stockName);
+    Optional<ModelStock> findByIDAndEntityDeleteFalse(Integer ID);
+    Iterable<ModelStock> findByEntityDeleteFalse();
 
     @Query(nativeQuery=true,
     value="SELECT * FROM model_stock"
-    + " WHERE (:stockName is null OR stock_name regexp :stockName)")
+    + " WHERE (entity_delete is false)"
+    + " AND (:stockName is null OR stock_name regexp :stockName)")
     Iterable<ModelStock> findStock(Optional<String> stockName);
 }

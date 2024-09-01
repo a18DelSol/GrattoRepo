@@ -239,7 +239,7 @@ public class ServiceSale {
             String path = currDir.getAbsolutePath();
             fileLocation = path.substring(0, path.length() - 1) + "sale_" + LocalDate.now() + "_" + LocalTime.now() + ".xlsx";
         } else {
-            fileLocation = salePath.get() + "_" + LocalDate.now() + "_" + LocalTime.now() + ".xlsx";
+            fileLocation = salePath.get() + "sale_" + LocalDate.now() + "_" + LocalTime.now() + ".xlsx";
         }
 
         try {
@@ -258,7 +258,7 @@ public class ServiceSale {
         Set<ModelSaleUpdate> saleUpdate = new HashSet<>();
 
         for (ModelSaleOrder a : sale.getSaleOrder()) {
-            ModelStockEntry stockEntry = repositoryStockEntry.findById(a.getOrderEntry().getEntryID()).orElseThrow(RuntimeException::new);
+            ModelStockEntry stockEntry = repositoryStockEntry.findById(a.getOrderEntry().getID()).orElseThrow(RuntimeException::new);
             ModelItem entryItem = stockEntry.getEntryItem();
             Float   newPrice = stockEntry.getEntryPrice() * a.getOrderAmount();
             Integer newEntry = stockEntry.getEntryCount() - a.getOrderAmount();
@@ -313,8 +313,29 @@ public class ServiceSale {
             }
         }
 
+        ModelSale.DiscountType type = sale.getSaleDiscountType();
+
+        switch (type) {
+            case DISCOUNT_PERCENT:
+                salePrice *= (sale.getSaleDiscountAmount() / 100.0f);
+                break;
+            case DISCOUNT_VALUE:
+                salePrice -= sale.getSaleDiscountAmount();
+
+                if (salePrice < 0.0f) {
+                    salePrice = 0.0f;
+                }
+                break;
+        }
+
+        Float saleChange = sale.getSaleAmount() - salePrice;
+
+        if (saleChange < 0.0f) {
+            saleChange = 0.0f;
+        }
+
         sale.setSalePrice(salePrice);
-        sale.setSaleChange(sale.getSaleAmount() - salePrice);
+        sale.setSaleChange(saleChange);
         sale.setSaleDate(LocalDate.now());
         sale.setSaleTime(LocalTime.now());
         sale.setSaleUpdate(saleUpdate);

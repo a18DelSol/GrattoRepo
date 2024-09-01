@@ -14,9 +14,9 @@ import java.time.LocalTime;
 @Setter
 @Entity
 public class ModelHistory {
-    @Id @GeneratedValue(strategy= GenerationType.AUTO) private Integer historyID;
+    @Id @GeneratedValue(strategy= GenerationType.AUTO) private Integer ID;
 
-    private String  historyText;
+    private String    historyText;
     private LocalDate historyDate;
     private LocalTime historyTime;
 }

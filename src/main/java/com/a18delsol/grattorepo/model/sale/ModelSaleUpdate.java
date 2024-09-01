@@ -9,8 +9,8 @@ import lombok.Setter;
 @Setter
 @Entity
 public class ModelSaleUpdate {
-    @Id @GeneratedValue(strategy= GenerationType.AUTO) private Integer updateID;
+    @Id @GeneratedValue(strategy= GenerationType.AUTO) private Integer ID;
 
-    Integer updateCount;
+    private Integer updateCount;
     @ManyToOne ModelStockEntry updateEntry;
 }

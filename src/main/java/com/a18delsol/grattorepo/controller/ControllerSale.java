@@ -6,6 +6,7 @@ import com.a18delsol.grattorepo.service.ServiceSale;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -65,7 +66,7 @@ public class ControllerSale {
     }
 
     @PostMapping(path = "/buy")
-    public @ResponseBody ResponseEntity<ModelSale> saleBuy(@RequestBody ModelSale sale) {
+    public @ResponseBody ResponseEntity<ModelSale> saleBuy(@RequestBody @Valid ModelSale sale) {
         return service.saleBuy(sale);
     }
 

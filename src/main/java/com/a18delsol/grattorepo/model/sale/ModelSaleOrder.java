@@ -11,8 +11,8 @@ import lombok.Setter;
 @Setter
 @Entity
 public class ModelSaleOrder {
-    @Id @GeneratedValue(strategy= GenerationType.AUTO) private Integer orderID;
+    @Id @GeneratedValue(strategy= GenerationType.AUTO) private Integer ID;
 
-    @NotNull @Min(0) private Integer orderAmount;
-    @ManyToOne private ModelStockEntry orderEntry;
+    @NotNull @Min(0)    private Integer         orderAmount;
+    @NotNull @ManyToOne private ModelStockEntry orderEntry;
 }

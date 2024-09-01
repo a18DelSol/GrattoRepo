@@ -19,7 +19,7 @@ public class ControllerHistory {
     @Autowired
     private ServiceHistory service;
 
-    @GetMapping(path = "/{historyID}")
+    @GetMapping(path = "/{ID}")
     public @ResponseBody ResponseEntity<ModelHistory> historyGetOne(@PathVariable Integer historyID) {
         return service.historyGetOne(historyID);
     }
@@ -43,12 +43,12 @@ public class ControllerHistory {
         return service.historyCreate(history);
     }
 
-    @DeleteMapping(path = "/{historyID}")
+    @DeleteMapping(path = "/{ID}")
     public @ResponseBody ResponseEntity<String> historyDelete(@PathVariable Integer historyID) {
         return service.historyDelete(historyID);
     }
 
-    @PatchMapping(path = "/{historyID}", consumes = "application/json-patch+json")
+    @PatchMapping(path = "/{ID}", consumes = "application/json-patch+json")
     public @ResponseBody ResponseEntity<ModelHistory> historyPatch(@RequestBody JsonPatch patch, @PathVariable Integer historyID) throws JsonPatchException, JsonProcessingException {
         return service.historyPatch(patch, historyID);
     }

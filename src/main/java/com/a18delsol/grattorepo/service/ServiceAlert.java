@@ -1,5 +1,6 @@
 package com.a18delsol.grattorepo.service;
 
+import com.a18delsol.grattorepo.exception.EntityNotFound;
 import com.a18delsol.grattorepo.model.alert.ModelAlert;
 import com.a18delsol.grattorepo.repository.alert.RepositoryAlert;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -22,7 +23,7 @@ public class ServiceAlert {
     RepositoryAlert repositoryAlert;
 
     public ResponseEntity<ModelAlert> alertGetOne(Integer alertID) {
-        return new ResponseEntity<>(repositoryAlert.findById(alertID).orElseThrow(RuntimeException::new), HttpStatus.OK);
+        return new ResponseEntity<>(repositoryAlert.findById(alertID).orElseThrow(EntityNotFound::new), HttpStatus.OK);
     }
 
     public ResponseEntity<Iterable<ModelAlert>> alertGetAll() {
@@ -47,13 +48,12 @@ public class ServiceAlert {
         newAlert.setAlertText(alertText);
         newAlert.setAlertDate(LocalDate.now());
         newAlert.setAlertTime(LocalTime.now());
-        newAlert.setAlertSeen(false);
 
         repositoryAlert.save(newAlert);
     }
 
     public ResponseEntity<String> alertDelete(Integer alertID) {
-        ModelAlert alert = repositoryAlert.findById(alertID).orElseThrow(RuntimeException::new);
+        ModelAlert alert = repositoryAlert.findById(alertID).orElseThrow(EntityNotFound::new);
 
         repositoryAlert.delete(alert);
 
@@ -61,7 +61,7 @@ public class ServiceAlert {
     }
 
     public ResponseEntity<ModelAlert> alertPatch(JsonPatch patch, Integer alertID) throws JsonPatchException, JsonProcessingException {
-        ModelAlert alert = repositoryAlert.findById(alertID).orElseThrow(RuntimeException::new);
+        ModelAlert alert = repositoryAlert.findById(alertID).orElseThrow(EntityNotFound::new);
 
         ObjectMapper objectMapper = new ObjectMapper();
 
@@ -71,10 +71,9 @@ public class ServiceAlert {
     //========================================================================
 
     public ResponseEntity<ModelAlert> alertDiscard(Integer alertID) {
-        ModelAlert alert = repositoryAlert.findById(alertID).orElseThrow(RuntimeException::new);
+        ModelAlert alert = repositoryAlert.findById(alertID).orElseThrow(EntityNotFound::new);
 
-        alert.setAlertSeen(true);
-        repositoryAlert.save(alert);
+        repositoryAlert.delete(alert);
 
         return new ResponseEntity<>(alert, HttpStatus.OK);
     }

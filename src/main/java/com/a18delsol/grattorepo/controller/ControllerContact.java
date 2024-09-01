@@ -19,7 +19,7 @@ public class ControllerContact {
     @Autowired
     private ServiceContact service;
 
-    @GetMapping(path = "/{contactID}")
+    @GetMapping(path = "/{ID}")
     public @ResponseBody ResponseEntity<ModelContact> contactGetOne(@PathVariable Integer contactID) {
         return service.contactGetOne(contactID);
     }
@@ -42,12 +42,12 @@ public class ControllerContact {
         return service.contactCreate(contact);
     }
 
-    @DeleteMapping(path = "/{contactID}")
+    @DeleteMapping(path = "/{ID}")
     public @ResponseBody ResponseEntity<String> contactDelete(@PathVariable Integer contactID) {
         return service.contactDelete(contactID);
     }
 
-    @PatchMapping(path = "/{contactID}", consumes = "application/json-patch+json")
+    @PatchMapping(path = "/{ID}", consumes = "application/json-patch+json")
     public @ResponseBody ResponseEntity<ModelContact> contactPatch(@RequestBody JsonPatch patch, @PathVariable Integer contactID) throws JsonPatchException, JsonProcessingException {
         return service.contactPatch(patch, contactID);
     }

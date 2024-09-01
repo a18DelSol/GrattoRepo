@@ -1,9 +1,11 @@
 package com.a18delsol.grattorepo.service;
 
+import com.a18delsol.grattorepo.model.contact.ModelContact;
 import com.a18delsol.grattorepo.model.item.ModelItem;
 import com.a18delsol.grattorepo.model.item.ModelItemAttribute;
 import com.a18delsol.grattorepo.model.item.ModelItemCompany;
 import com.a18delsol.grattorepo.model.stock.ModelStockEntry;
+import com.a18delsol.grattorepo.repository.contact.RepositoryContact;
 import com.a18delsol.grattorepo.repository.item.RepositoryItem;
 import com.a18delsol.grattorepo.repository.item.RepositoryItemAttribute;
 import com.a18delsol.grattorepo.repository.item.RepositoryItemCompany;
@@ -26,14 +28,16 @@ public class ServiceItem {
     @Autowired RepositoryItemAttribute repositoryItemAttribute;
     @Autowired RepositoryItemCompany   repositoryItemCompany;
     @Autowired RepositoryStockEntry    repositoryStockEntry;
+    @Autowired RepositoryContact       repositoryContact;
     @Autowired ServiceHistory          serviceHistory;
+    @Autowired ServiceStock            serviceStock;
 
     public ResponseEntity<ModelItem> itemGetOne(Integer itemID) {
-        return new ResponseEntity<>(repositoryItem.findById(itemID).orElseThrow(RuntimeException::new), HttpStatus.OK);
+        return new ResponseEntity<>(repositoryItem.findByIDAndEntityDeleteFalse(itemID).orElseThrow(RuntimeException::new), HttpStatus.OK);
     }
 
     public ResponseEntity<Iterable<ModelItem>> itemGetAll() {
-        return new ResponseEntity<>(repositoryItem.findAll(), HttpStatus.OK);
+        return new ResponseEntity<>(repositoryItem.findByEntityDeleteFalse(), HttpStatus.OK);
     }
 
     public ResponseEntity<Iterable<ModelItem>> itemFind(
@@ -57,7 +61,17 @@ public class ServiceItem {
     public ResponseEntity<String> itemDelete(Integer itemID) {
         ModelItem item = repositoryItem.findById(itemID).orElseThrow(RuntimeException::new);
 
-        repositoryItem.delete(item);
+        for (ModelContact i : item.getItemContact()) {
+            i.getContactItem().remove(item);
+            repositoryContact.save(i);
+        }
+
+        for (ModelStockEntry i : item.getItemEntry()) {
+            serviceStock.stockEntryDelete(i.getID());
+        }
+
+        item.setEntityDelete(true);
+
         serviceHistory.historyCreate(String.format("[Producto] Eliminación (%s [%s])",
                 item.getItemName(),
                 item.getItemCode()
@@ -109,11 +123,11 @@ public class ServiceItem {
     //========================================================================
 
     public ResponseEntity<ModelItemAttribute> itemAttributeGetOne(Integer itemAttributeID) {
-        return new ResponseEntity<>(repositoryItemAttribute.findById(itemAttributeID).orElseThrow(RuntimeException::new), HttpStatus.OK);
+        return new ResponseEntity<>(repositoryItemAttribute.findByIDAndEntityDeleteFalse(itemAttributeID).orElseThrow(RuntimeException::new), HttpStatus.OK);
     }
 
     public ResponseEntity<Iterable<ModelItemAttribute>> itemAttributeGetAll() {
-        return new ResponseEntity<>(repositoryItemAttribute.findAll(), HttpStatus.OK);
+        return new ResponseEntity<>(repositoryItemAttribute.findByEntityDeleteFalse(), HttpStatus.OK);
     }
 
     public ResponseEntity<Iterable<ModelItemAttribute>> itemAttributeFind(
@@ -130,7 +144,7 @@ public class ServiceItem {
     public ResponseEntity<String> itemAttributeDelete(Integer itemAttributeID) {
         ModelItemAttribute itemAttribute = repositoryItemAttribute.findById(itemAttributeID).orElseThrow(RuntimeException::new);
 
-        repositoryItemAttribute.delete(itemAttribute);
+        itemAttribute.setEntityDelete(true);
 
         return new ResponseEntity<>("Delete OK.", HttpStatus.OK);
     }
@@ -148,11 +162,11 @@ public class ServiceItem {
     //========================================================================
 
     public ResponseEntity<ModelItemCompany> itemCompanyGetOne(Integer itemCompanyID) {
-        return new ResponseEntity<>(repositoryItemCompany.findById(itemCompanyID).orElseThrow(RuntimeException::new), HttpStatus.OK);
+        return new ResponseEntity<>(repositoryItemCompany.findByIDAndEntityDeleteFalse(itemCompanyID).orElseThrow(RuntimeException::new), HttpStatus.OK);
     }
 
     public ResponseEntity<Iterable<ModelItemCompany>> itemCompanyGetAll() {
-        return new ResponseEntity<>(repositoryItemCompany.findAll(), HttpStatus.OK);
+        return new ResponseEntity<>(repositoryItemCompany.findByEntityDeleteFalse(), HttpStatus.OK);
     }
 
     public ResponseEntity<Iterable<ModelItemCompany>> itemCompanyFind(
@@ -169,7 +183,12 @@ public class ServiceItem {
     public ResponseEntity<String> itemCompanyDelete(Integer itemCompanyID) {
         ModelItemCompany itemCompany = repositoryItemCompany.findById(itemCompanyID).orElseThrow(RuntimeException::new);
 
-        repositoryItemCompany.delete(itemCompany);
+        for (ModelContact i : itemCompany.getCompanyContact()) {
+            i.getContactCompany().remove(itemCompany);
+            repositoryContact.save(i);
+        }
+
+        itemCompany.setEntityDelete(true);
 
         return new ResponseEntity<>("Delete OK.", HttpStatus.OK);
     }

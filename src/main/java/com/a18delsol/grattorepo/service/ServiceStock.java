@@ -21,21 +21,23 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Optional;
 
 @Service
 public class ServiceStock {
-    @Autowired RepositoryStock      repositoryStock;
-    @Autowired RepositoryStockEntry repositoryStockEntry;
-    @Autowired RepositoryItem       repositoryItem;
-    @Autowired ServiceHistory       serviceHistory;
+    @Autowired RepositoryStock       repositoryStock;
+    @Autowired RepositoryStockEntry  repositoryStockEntry;
+    @Autowired RepositoryItem        repositoryItem;
+    @Autowired ServiceHistory        serviceHistory;
 
     public ResponseEntity<ModelStock> stockGetOne(Integer stockID) {
-        return new ResponseEntity<>(repositoryStock.findById(stockID).orElseThrow(RuntimeException::new), HttpStatus.OK);
+        return new ResponseEntity<>(repositoryStock.findByIDAndEntityDeleteFalse(stockID).orElseThrow(RuntimeException::new), HttpStatus.OK);
     }
 
     public ResponseEntity<Iterable<ModelStock>> stockGetAll() {
-        return new ResponseEntity<>(repositoryStock.findAll(), HttpStatus.OK);
+        return new ResponseEntity<>(repositoryStock.findByEntityDeleteFalse(), HttpStatus.OK);
     }
 
     public ResponseEntity<Iterable<ModelStock>> stockFind(
@@ -55,7 +57,12 @@ public class ServiceStock {
     public ResponseEntity<String> stockDelete(Integer stockID) {
         ModelStock stock = repositoryStock.findById(stockID).orElseThrow(RuntimeException::new);
 
-        repositoryStock.delete(stock);
+        for (ModelStockEntry i : stock.getStockEntry()) {
+            stockEntryDelete(i.getID());
+        }
+
+        stock.setEntityDelete(true);
+
         serviceHistory.historyCreate(String.format("[Stock] Eliminación (%s)",
                 stock.getStockName()
         ));
@@ -76,11 +83,11 @@ public class ServiceStock {
     //========================================================================
 
     public ResponseEntity<ModelStockEntry> stockEntryGetOne(Integer stockEntryID) {
-        return new ResponseEntity<>(repositoryStockEntry.findById(stockEntryID).orElseThrow(RuntimeException::new), HttpStatus.OK);
+        return new ResponseEntity<>(repositoryStockEntry.findByIDAndEntityDeleteFalse(stockEntryID).orElseThrow(RuntimeException::new), HttpStatus.OK);
     }
 
     public ResponseEntity<Iterable<ModelStockEntry>> stockEntryGetAll() {
-        return new ResponseEntity<>(repositoryStockEntry.findAll(), HttpStatus.OK);
+        return new ResponseEntity<>(repositoryStockEntry.findByEntityDeleteFalse(), HttpStatus.OK);
     }
 
     public ResponseEntity<Iterable<ModelStockEntry>> stockEntryFind(
@@ -94,8 +101,8 @@ public class ServiceStock {
     public ResponseEntity<String> stockEntryCreate(ModelStockEntry stockEntry) {
         repositoryStockEntry.save(stockEntry);
 
-        ModelStock historyStock = repositoryStock.findById(stockEntry.getEntryStock().getStockID()).orElseThrow(RuntimeException::new);
-        ModelItem  historyItem  = repositoryItem.findById(stockEntry.getEntryItem().getItemID()).orElseThrow(RuntimeException::new);
+        ModelStock historyStock = repositoryStock.findById(stockEntry.getEntryStock().getID()).orElseThrow(RuntimeException::new);
+        ModelItem  historyItem  = repositoryItem.findById(stockEntry.getEntryItem().getID()).orElseThrow(RuntimeException::new);
 
         serviceHistory.historyCreate(String.format("[Listado] Creación (%s : %s [%s])",
                 historyStock.getStockName(),
@@ -109,7 +116,8 @@ public class ServiceStock {
     public ResponseEntity<String> stockEntryDelete(Integer stockEntryID) {
         ModelStockEntry stockEntry = repositoryStockEntry.findById(stockEntryID).orElseThrow(RuntimeException::new);
 
-        repositoryStockEntry.delete(stockEntry);
+        stockEntry.setEntityDelete(true);
+
         serviceHistory.historyCreate(String.format("[Listado] Eliminación (%s : %s [%s])",
                 stockEntry.getEntryStock().getStockName(),
                 stockEntry.getEntryItem().getItemName(),
@@ -175,7 +183,7 @@ public class ServiceStock {
         return new ResponseEntity<>("Update OK.", HttpStatus.OK);
     }
 
-    public ResponseEntity<String> stockEntryReport() {
+    public ResponseEntity<String> stockEntryReport(Optional<String> reportPath) {
         Workbook workbook = new XSSFWorkbook();
 
         Sheet sheet = workbook.createSheet("General");
@@ -219,7 +227,7 @@ public class ServiceStock {
         CellStyle style = workbook.createCellStyle();
         style.setWrapText(false);
 
-        Iterable<ModelStockEntry> array = repositoryStockEntry.findAll();
+        Iterable<ModelStockEntry> array = repositoryStockEntry.findByEntityDeleteFalse();
 
         Integer iterate = 1;
 
@@ -260,9 +268,15 @@ public class ServiceStock {
         sheet.autoSizeColumn(4);
         sheet.autoSizeColumn(5);
 
-        File currDir = new File(".");
-        String path = currDir.getAbsolutePath();
-        String fileLocation = path.substring(0, path.length() - 1) + "stock.xlsx";
+        String fileLocation = "";
+
+        if (reportPath.isEmpty()) {
+            File currDir = new File(".");
+            String path = currDir.getAbsolutePath();
+            fileLocation = path.substring(0, path.length() - 1) + "stock_" + LocalDate.now() + "_" + LocalTime.now() + ".xlsx";
+        } else {
+            fileLocation = reportPath.get() + "stock_" + LocalDate.now() + "_" + LocalTime.now() + ".xlsx";
+        }
 
         try {
             FileOutputStream outputStream = new FileOutputStream(fileLocation);

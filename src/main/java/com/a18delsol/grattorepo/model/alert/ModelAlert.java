@@ -14,10 +14,9 @@ import java.time.LocalTime;
 @Setter
 @Entity
 public class ModelAlert {
-    @Id @GeneratedValue(strategy= GenerationType.AUTO) private Integer alertID;
+    @Id @GeneratedValue(strategy= GenerationType.AUTO) private Integer ID;
 
-    private String alertText;
+    private String    alertText;
     private LocalDate alertDate;
     private LocalTime alertTime;
-    private Boolean alertSeen;
 }

@@ -123,12 +123,12 @@ Un Producto ("Item") es un producto que dispone de un nombre, un código SKU, un
     "itemAttribute":
     [
       {
-        "attributeID": 1
+        "id": 1
       }
     ],
     "itemCompany":
     {
-      "companyID": 1
+      "id": 1
     }
 }
 ```
@@ -195,11 +195,11 @@ Un Listado ("StockEntry") se ocupa de conectar un Producto y una Tienda, agregan
     "entryPrice": 100.0,
     "entryItem":
     {
-      "itemID": 1
+      "id": 1
     },
     "entryStock":
     {
-      "stockID": 1
+      "id": 1
     }
 }
 ```
@@ -261,6 +261,10 @@ Permite actualizar el precio de un listado. Funciona como una diferencia (e.j. "
 |----------------------|--------|--------|---------------------|
 | `stock/entry/report` | GET    | N/A    | Archivo Excel .xlsx |
 
+| Parámetro    | Clase | Tipo   | Descripción                                          |
+|--------------|-------|--------|------------------------------------------------------|
+| `reportPath` | Query | String | La ubicación en donde se debería guardar el archivo. |
+
 ## Compra
 Una Compra ("Sale") describe la venta de un Listado (o mas), agregando información como fecha y hora de la compra, nombre, teléfono, y correo del cliente, y precio final de la venta.
 
@@ -279,27 +283,30 @@ Una Compra ("Sale") describe la venta de un Listado (o mas), agregando informaci
   "saleName": "Fulanito Menganito",
   "saleMail": "fulanitomenganito@mail.com",
   "saleCall": "1234-5678",
-  "saleDate": "2024-01-01",
-  "saleTime": "18:00:00",
+  "saleDiscountType": "DISCOUNT_VALUE",
+  "saleDiscountAmount": 50.0,
   "saleOrder":
   [
     {
-      "orderAmount": 8,
+      "orderAmount": 6,
       "orderEntry":
       {
-        "entryID": 1
-      }
-    },
-    {
-      "orderAmount": 4,
-      "orderEntry":
-      {
-        "entryID": 2
+        "id": 1
       }
     }
   ]
 }
 ```
+
+`saleDiscountType` debe ser agregado como cuerpo de la venta para realizar un descuento, y siempre debe estar presente.
+
+`saleDiscountType` puede tomar uno de los siguientes valores;
+
+| Tipo de descuento  | Nombre de descuento       | Efecto del descuento                                          |
+|--------------------|---------------------------|---------------------------------------------------------------|
+| `DISCOUNT_NONE`    | No aplicar descuento.     | `saleDiscountAmount` no tiene efecto.                         |
+| `DISCOUNT_PERCENT` | Descuento por porcentaje. | `saleDiscountAmount` es comprendido como un porcentaje.       |
+| `DISCOUNT_VALUE`   | Descuento por precio.     | `saleDiscountAmount` es comprendido como una resta de precio. |
 
 #### Búsqueda
 
@@ -358,18 +365,20 @@ Un Contacto ("Contact") describe un contacto, que está asociado a una Compañí
 
 ```json
 {
-    "contactName": "Distribuidora Lo' Cra' S.A.",
-    "contactMail": "andarásbienporla66@mail.com",
-    "contactCall": "9999-1111",
-    "contactCompany":
-    [
-      {
-        "companyID" : 1
-      },
-      {
-        "companyID" : 2
-      }
-    ]
+  "contactName": "Distribuidora Vino-Mania",
+  "contactMail": "adondevauncolor@mail.com",
+  "contactCall": "1111-9999",
+  "contactProvider": true,
+  "contactItem":
+  [
+    { "id" : 1 },
+    { "id" : 2 }
+  ],
+  "contactCompany":
+  [
+    { "id" : 1 },
+    { "id" : 2 }
+  ]
 }
 ```
 
