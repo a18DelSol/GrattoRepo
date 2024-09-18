@@ -1,0 +1,30 @@
+meta {
+  name: -Item- Create #2
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{globalHost}}/{{globalEndItem}}/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "itemName": "Vino Malbec Rutini",
+    "itemCode": "MAL-RUT",
+    "itemCount": 15,
+    "itemAlert": 5,
+    "itemAttribute":
+    [
+      {
+        "id": 1
+      }
+    ],
+    "itemCompany":
+    {
+      "id": 2
+    }
+  }
+}

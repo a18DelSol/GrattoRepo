@@ -1,0 +1,17 @@
+meta {
+  name: -ItemCompany- Create #1
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{globalHost}}/{{globalEndItem}}/company
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "companyName": "Trumpeter"
+  }
+}

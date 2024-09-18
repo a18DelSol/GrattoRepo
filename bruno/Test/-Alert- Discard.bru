@@ -1,0 +1,11 @@
+meta {
+  name: -Alert- Discard
+  type: http
+  seq: 40
+}
+
+post {
+  url: {{globalHost}}/{{globalEndAlert}}/1/discard
+  body: json
+  auth: none
+}

@@ -1,0 +1,26 @@
+meta {
+  name: -Entry- Create #1
+  type: http
+  seq: 24
+}
+
+post {
+  url: {{globalHost}}/{{globalEndStock}}/entry
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "entryCount": 10,
+    "entryPrice": 100.0,
+    "entryItem":
+    {
+      "id": 1
+    },
+    "entryStock":
+    {
+      "id": 1
+    }
+  }
+}

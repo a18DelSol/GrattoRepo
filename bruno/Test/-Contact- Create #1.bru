@@ -1,0 +1,22 @@
+meta {
+  name: -Contact- Create #1
+  type: http
+  seq: 16
+}
+
+post {
+  url: {{globalHost}}/{{globalEndContact}}/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "contactName": "Fulano",
+    "contactMail": "andarásbienporla66@mail.com",
+    "contactCall": "9999-1111",
+    "contactProvider": false,
+    "contactItem": [],
+    "contactCompany": []
+  }
+}

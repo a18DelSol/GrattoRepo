@@ -1,0 +1,17 @@
+meta {
+  name: -ItemCompany- Create #2
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{globalHost}}/{{globalEndItem}}/company
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "companyName": "Rutini"
+  }
+}

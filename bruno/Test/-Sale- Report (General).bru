@@ -1,0 +1,15 @@
+meta {
+  name: -Sale- Report (General)
+  type: http
+  seq: 36
+}
+
+get {
+  url: {{globalHost}}/{{globalEndSale}}/report?salePath=/home/heart/Desktop/
+  body: json
+  auth: none
+}
+
+query {
+  salePath: /home/heart/Desktop/
+}

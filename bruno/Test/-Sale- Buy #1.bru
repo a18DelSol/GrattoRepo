@@ -1,0 +1,33 @@
+meta {
+  name: -Sale- Buy #1
+  type: http
+  seq: 33
+}
+
+post {
+  url: {{globalHost}}/{{globalEndSale}}/buy
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "salePayment": "MP",
+    "saleAmount": 10000.0,
+    "saleName": "Fulanito Menganito",
+    "saleMail": "fulanitomenganito@mail.com",
+    "saleCall": "1234-5678",
+    "saleDiscountType": "DISCOUNT_VALUE",
+    "saleDiscountAmount": 50.0,
+    "saleOrder":
+    [
+      {
+        "orderAmount": 14,
+        "orderEntry":
+        {
+          "id": 1
+        }
+      }
+    ]
+  }
+}

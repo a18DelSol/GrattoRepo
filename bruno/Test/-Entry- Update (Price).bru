@@ -1,0 +1,15 @@
+meta {
+  name: -Entry- Update (Price)
+  type: http
+  seq: 29
+}
+
+patch {
+  url: {{globalHost}}/{{globalEndStock}}/entry/1/price?entryPrice=25
+  body: json
+  auth: none
+}
+
+query {
+  entryPrice: 25
+}

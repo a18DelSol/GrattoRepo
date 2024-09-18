@@ -1,0 +1,15 @@
+meta {
+  name: -Entry- Update (Count)
+  type: http
+  seq: 28
+}
+
+patch {
+  url: {{globalHost}}/{{globalEndStock}}/entry/1/count?entryCount=5
+  body: json
+  auth: none
+}
+
+query {
+  entryCount: 5
+}

@@ -1,0 +1,17 @@
+meta {
+  name: -Item- Find
+  type: http
+  seq: 12
+}
+
+get {
+  url: {{globalHost}}/{{globalEndItem}}/find?itemName=Tru&itemCountMin=5&itemCountMax=10
+  body: json
+  auth: none
+}
+
+query {
+  itemName: Tru
+  itemCountMin: 5
+  itemCountMax: 10
+}

@@ -1,0 +1,30 @@
+meta {
+  name: -Item- Create #1
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{globalHost}}/{{globalEndItem}}/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "itemName": "Vino Malbec Trumpeter",
+    "itemCode": "MAL-TRU",
+    "itemCount": 10,
+    "itemAlert": 5,
+    "itemAttribute":
+    [
+      {
+        "id": 1
+      }
+    ],
+    "itemCompany":
+    {
+      "id": 1
+    }
+  }
+}

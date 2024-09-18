@@ -1,0 +1,26 @@
+meta {
+  name: -Contact- Create #2
+  type: http
+  seq: 17
+}
+
+post {
+  url: {{globalHost}}/{{globalEndContact}}/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "contactName": "Distribuidora Vino-Mania",
+    "contactMail": "adondevauncolor@mail.com",
+    "contactCall": "1111-9999",
+    "contactProvider": true,
+    "contactItem":
+    [
+      { "id" : 1 },
+      { "id" : 2 }
+    ],
+    "contactCompany": []
+  }
+}

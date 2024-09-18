@@ -1,0 +1,26 @@
+meta {
+  name: -Sale- Find
+  type: http
+  seq: 41
+}
+
+get {
+  url: {{globalHost}}/{{globalEndSale}}/find
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "userName": "Juan I.",
+      "userMail": "juanI@mail.com",
+      "userPass": "pass1",
+      "userBirth": "2010-06-15",
+      "userAttribute":
+      [
+          {
+              "attributeID": 1
+          }
+      ]
+  }
+}

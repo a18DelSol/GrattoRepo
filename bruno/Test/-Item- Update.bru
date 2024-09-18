@@ -1,0 +1,15 @@
+meta {
+  name: -Item- Update
+  type: http
+  seq: 14
+}
+
+patch {
+  url: {{globalHost}}/{{globalEndItem}}/1/count?itemCount=5
+  body: json
+  auth: none
+}
+
+query {
+  itemCount: 5
+}

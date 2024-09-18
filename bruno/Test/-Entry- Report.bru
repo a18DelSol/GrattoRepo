@@ -1,0 +1,15 @@
+meta {
+  name: -Entry- Report
+  type: http
+  seq: 31
+}
+
+get {
+  url: {{globalHost}}/{{globalEndStock}}/entry/report?reportPath=/home/heart/Desktop/
+  body: json
+  auth: none
+}
+
+query {
+  reportPath: /home/heart/Desktop/
+}

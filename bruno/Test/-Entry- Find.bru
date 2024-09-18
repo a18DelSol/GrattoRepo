@@ -1,0 +1,16 @@
+meta {
+  name: -Entry- Find
+  type: http
+  seq: 26
+}
+
+get {
+  url: {{globalHost}}/{{globalEndStock}}/entry/find?entryCountMin=100&entryCountMax=200
+  body: json
+  auth: none
+}
+
+query {
+  entryCountMin: 100
+  entryCountMax: 200
+}

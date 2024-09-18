@@ -1,0 +1,17 @@
+meta {
+  name: -Stock- Create #1
+  type: http
+  seq: 19
+}
+
+post {
+  url: {{globalHost}}/{{globalEndStock}}/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "stockName": "Tienda Ituzaingo"
+  }
+}

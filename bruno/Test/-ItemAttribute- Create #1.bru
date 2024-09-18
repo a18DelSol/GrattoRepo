@@ -1,0 +1,17 @@
+meta {
+  name: -ItemAttribute- Create #1
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{globalHost}}/{{globalEndItem}}/attribute
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "attributeName": "Bebida"
+  }
+}

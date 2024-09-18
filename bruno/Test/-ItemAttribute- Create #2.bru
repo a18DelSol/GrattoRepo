@@ -1,0 +1,17 @@
+meta {
+  name: -ItemAttribute- Create #2
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{globalHost}}/{{globalEndItem}}/attribute
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "attributeName": "Accesorio"
+  }
+}

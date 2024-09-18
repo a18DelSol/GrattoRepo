@@ -1,0 +1,15 @@
+meta {
+  name: -Item- Find (after Entry)
+  type: http
+  seq: 32
+}
+
+get {
+  url: {{globalHost}}/{{globalEndItem}}/find?itemCode=MAL-
+  body: json
+  auth: none
+}
+
+query {
+  itemCode: MAL-
+}

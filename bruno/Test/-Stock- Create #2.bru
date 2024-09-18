@@ -1,0 +1,17 @@
+meta {
+  name: -Stock- Create #2
+  type: http
+  seq: 20
+}
+
+post {
+  url: {{globalHost}}/{{globalEndStock}}/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "stockName": "Tienda Moron"
+  }
+}
