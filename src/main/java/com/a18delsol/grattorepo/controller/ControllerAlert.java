@@ -45,7 +45,7 @@ public class ControllerAlert {
     }
 
     @PatchMapping(path = "/{alertID}", consumes = "application/json-patch+json")
-    public @ResponseBody ResponseEntity<ModelAlert> alertPatch(@RequestBody JsonPatch patch, @PathVariable Integer alertID) throws JsonPatchException, JsonProcessingException {
+    public @ResponseBody ResponseEntity<String> alertPatch(@RequestBody JsonPatch patch, @PathVariable Integer alertID) throws JsonPatchException, JsonProcessingException {
         return service.alertPatch(patch, alertID);
     }
 

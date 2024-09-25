@@ -51,7 +51,7 @@ public class ControllerSale {
     }
 
     @PatchMapping(path = "/{saleID}", consumes = "application/json-patch+json")
-    public @ResponseBody ResponseEntity<ModelSale> salePatch(@RequestBody JsonPatch patch, @PathVariable Integer saleID) throws JsonPatchException, JsonProcessingException {
+    public @ResponseBody ResponseEntity<String> salePatch(@RequestBody JsonPatch patch, @PathVariable Integer saleID) throws JsonPatchException, JsonProcessingException {
         return service.salePatch(patch, saleID);
     }
 
@@ -107,7 +107,7 @@ public class ControllerSale {
     }
 
     @PatchMapping(path = "/order/{saleOrderID}", consumes = "application/json-patch+json")
-    public @ResponseBody ResponseEntity<ModelSaleOrder> saleOrderPatch(@RequestBody JsonPatch patch, @PathVariable Integer saleOrderID)
+    public @ResponseBody ResponseEntity<String> saleOrderPatch(@RequestBody JsonPatch patch, @PathVariable Integer saleOrderID)
             throws JsonPatchException, JsonProcessingException {
         return service.saleOrderPatch(patch, saleOrderID);
     }

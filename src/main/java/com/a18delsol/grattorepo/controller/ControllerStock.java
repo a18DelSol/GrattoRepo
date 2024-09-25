@@ -47,7 +47,7 @@ public class ControllerStock {
     }
 
     @PatchMapping(path = "/{stockID}", consumes = "application/json-patch+json")
-    public @ResponseBody ResponseEntity<ModelStock> stockPatch(@RequestBody JsonPatch patch, @PathVariable Integer stockID) throws JsonPatchException, JsonProcessingException {
+    public @ResponseBody ResponseEntity<String> stockPatch(@RequestBody JsonPatch patch, @PathVariable Integer stockID) throws JsonPatchException, JsonProcessingException {
         return service.stockPatch(patch, stockID);
     }
 
@@ -85,7 +85,7 @@ public class ControllerStock {
     }
 
     @PatchMapping(path = "/entry/{stockEntryID}", consumes = "application/json-patch+json")
-    public @ResponseBody ResponseEntity<ModelStockEntry> stockEntryPatch(@RequestBody JsonPatch patch, @PathVariable Integer stockEntryID)
+    public @ResponseBody ResponseEntity<String> stockEntryPatch(@RequestBody JsonPatch patch, @PathVariable Integer stockEntryID)
             throws JsonPatchException, JsonProcessingException {
         return service.stockEntryPatch(patch, stockEntryID);
     }

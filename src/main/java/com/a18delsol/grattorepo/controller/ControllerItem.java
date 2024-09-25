@@ -4,6 +4,9 @@ import com.a18delsol.grattorepo.model.item.ModelItem;
 import com.a18delsol.grattorepo.model.item.ModelItemAttribute;
 import com.a18delsol.grattorepo.model.item.ModelItemCompany;
 import com.a18delsol.grattorepo.service.ServiceItem;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.github.fge.jsonpatch.JsonPatch;
+import com.github.fge.jsonpatch.JsonPatchException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -47,6 +50,11 @@ public class ControllerItem {
         return service.itemDelete(itemID);
     }
 
+    @PatchMapping(path = "/{itemID}", consumes = "application/json-patch+json")
+    public @ResponseBody ResponseEntity<String> itemPatch(@RequestBody JsonPatch patch, @PathVariable Integer itemID) throws JsonPatchException, JsonProcessingException {
+        return service.itemPatch(patch, itemID);
+    }
+
     //========================================================================
 
     @PatchMapping(path = "/{itemID}/count")
@@ -84,6 +92,11 @@ public class ControllerItem {
         return service.itemAttributeDelete(itemAttributeID);
     }
 
+    @PatchMapping(path = "/attribute/{itemAttributeID}", consumes = "application/json-patch+json")
+    public @ResponseBody ResponseEntity<String> itemAttributePatch(@RequestBody JsonPatch patch, @PathVariable Integer itemAttributeID) throws JsonPatchException, JsonProcessingException {
+        return service.itemAttributePatch(patch, itemAttributeID);
+    }
+
     //========================================================================
     // ModelItemCompany sub-controller
     //========================================================================
@@ -112,5 +125,10 @@ public class ControllerItem {
     @DeleteMapping(path = "/company/{itemCompanyID}")
     public @ResponseBody ResponseEntity<String> itemCompanyDelete(@PathVariable Integer itemCompanyID) {
         return service.itemCompanyDelete(itemCompanyID);
+    }
+
+    @PatchMapping(path = "/attribute/{itemCompanyID}", consumes = "application/json-patch+json")
+    public @ResponseBody ResponseEntity<String> itemCompanyPatch(@RequestBody JsonPatch patch, @PathVariable Integer itemCompanyID) throws JsonPatchException, JsonProcessingException {
+        return service.itemCompanyPatch(patch, itemCompanyID);
     }
 }

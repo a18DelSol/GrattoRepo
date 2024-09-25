@@ -1,0 +1,23 @@
+meta {
+  name: -Stock- Update
+  type: http
+  seq: 17
+}
+
+patch {
+  url: {{globalHost}}/{{globalEndStock}}/1
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json-patch+json
+}
+
+body:json {
+  [{
+      "op": "replace",
+      "path": "/stockName",
+      "value": "nuevoNombre"
+  }]
+}

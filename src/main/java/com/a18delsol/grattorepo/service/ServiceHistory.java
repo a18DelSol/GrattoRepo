@@ -62,11 +62,13 @@ public class ServiceHistory {
         return new ResponseEntity<>("Delete OK.", HttpStatus.OK);
     }
 
-    public ResponseEntity<ModelHistory> historyPatch(JsonPatch patch, Integer historyID) throws JsonPatchException, JsonProcessingException {
+    public ResponseEntity<String> historyPatch(JsonPatch patch, Integer historyID) throws JsonPatchException, JsonProcessingException {
         ModelHistory history = repositoryHistory.findById(historyID).orElseThrow(RuntimeException::new);
 
         ObjectMapper objectMapper = new ObjectMapper();
 
-        return new ResponseEntity<>(objectMapper.treeToValue(patch.apply(objectMapper.convertValue(history, JsonNode.class)), ModelHistory.class), HttpStatus.OK);
+        repositoryHistory.save(objectMapper.treeToValue(patch.apply(objectMapper.convertValue(history, JsonNode.class)), ModelHistory.class));
+
+        return new ResponseEntity<>("Patch OK.", HttpStatus.OK);
     }
 }

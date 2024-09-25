@@ -48,11 +48,13 @@ public class ServiceContact {
         return new ResponseEntity<>("Delete OK.", HttpStatus.OK);
     }
 
-    public ResponseEntity<ModelContact> contactPatch(JsonPatch patch, Integer contactID) throws JsonPatchException, JsonProcessingException {
+    public ResponseEntity<String> contactPatch(JsonPatch patch, Integer contactID) throws JsonPatchException, JsonProcessingException {
         ModelContact contact = repositoryContact.findById(contactID).orElseThrow(RuntimeException::new);
 
         ObjectMapper objectMapper = new ObjectMapper();
 
-        return new ResponseEntity<>(objectMapper.treeToValue(patch.apply(objectMapper.convertValue(contact, JsonNode.class)), ModelContact.class), HttpStatus.OK);
+        repositoryContact.save(objectMapper.treeToValue(patch.apply(objectMapper.convertValue(contact, JsonNode.class)), ModelContact.class));
+
+        return new ResponseEntity<>("Patch OK.", HttpStatus.OK);
     }
 }

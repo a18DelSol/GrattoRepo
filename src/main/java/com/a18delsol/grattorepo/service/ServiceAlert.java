@@ -60,12 +60,14 @@ public class ServiceAlert {
         return new ResponseEntity<>("Delete OK.", HttpStatus.OK);
     }
 
-    public ResponseEntity<ModelAlert> alertPatch(JsonPatch patch, Integer alertID) throws JsonPatchException, JsonProcessingException {
+    public ResponseEntity<String> alertPatch(JsonPatch patch, Integer alertID) throws JsonPatchException, JsonProcessingException {
         ModelAlert alert = repositoryAlert.findById(alertID).orElseThrow(EntityNotFound::new);
 
         ObjectMapper objectMapper = new ObjectMapper();
 
-        return new ResponseEntity<>(objectMapper.treeToValue(patch.apply(objectMapper.convertValue(alert, JsonNode.class)), ModelAlert.class), HttpStatus.OK);
+        repositoryAlert.save(objectMapper.treeToValue(patch.apply(objectMapper.convertValue(alert, JsonNode.class)), ModelAlert.class));
+
+        return new ResponseEntity<>("Patch OK.", HttpStatus.OK);
     }
 
     //========================================================================

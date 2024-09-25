@@ -70,12 +70,14 @@ public class ServiceStock {
         return new ResponseEntity<>("Delete OK.", HttpStatus.OK);
     }
 
-    public ResponseEntity<ModelStock> stockPatch(JsonPatch patch, Integer stockID) throws JsonPatchException, JsonProcessingException {
+    public ResponseEntity<String> stockPatch(JsonPatch patch, Integer stockID) throws JsonPatchException, JsonProcessingException {
         ModelStock stock = repositoryStock.findById(stockID).orElseThrow(RuntimeException::new);
 
         ObjectMapper objectMapper = new ObjectMapper();
 
-        return new ResponseEntity<>(objectMapper.treeToValue(patch.apply(objectMapper.convertValue(stock, JsonNode.class)), ModelStock.class), HttpStatus.OK);
+        repositoryStock.save(objectMapper.treeToValue(patch.apply(objectMapper.convertValue(stock, JsonNode.class)), ModelStock.class));
+
+        return new ResponseEntity<>("Patch OK.", HttpStatus.OK);
     }
 
     //========================================================================
@@ -127,12 +129,14 @@ public class ServiceStock {
         return new ResponseEntity<>("Delete OK.", HttpStatus.OK);
     }
 
-    public ResponseEntity<ModelStockEntry> stockEntryPatch(JsonPatch patch, Integer stockEntryID) throws JsonPatchException, JsonProcessingException {
+    public ResponseEntity<String> stockEntryPatch(JsonPatch patch, Integer stockEntryID) throws JsonPatchException, JsonProcessingException {
         ModelStockEntry stockEntry = repositoryStockEntry.findById(stockEntryID).orElseThrow(RuntimeException::new);
 
         ObjectMapper objectMapper = new ObjectMapper();
 
-        return new ResponseEntity<>(objectMapper.treeToValue(patch.apply(objectMapper.convertValue(stockEntry, JsonNode.class)), ModelStockEntry.class), HttpStatus.OK);
+        repositoryStockEntry.save(objectMapper.treeToValue(patch.apply(objectMapper.convertValue(stockEntry, JsonNode.class)), ModelStockEntry.class));
+
+        return new ResponseEntity<>("Patch OK.", HttpStatus.OK);
     }
 
     //========================================================================

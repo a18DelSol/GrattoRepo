@@ -80,12 +80,14 @@ public class ServiceItem {
         return new ResponseEntity<>("Delete OK.", HttpStatus.OK);
     }
 
-    public ResponseEntity<ModelItem> itemPatch(JsonPatch patch, Integer itemID) throws JsonPatchException, JsonProcessingException {
+    public ResponseEntity<String> itemPatch(JsonPatch patch, Integer itemID) throws JsonPatchException, JsonProcessingException {
         ModelItem item = repositoryItem.findById(itemID).orElseThrow(RuntimeException::new);
 
         ObjectMapper objectMapper = new ObjectMapper();
 
-        return new ResponseEntity<>(objectMapper.treeToValue(patch.apply(objectMapper.convertValue(item, JsonNode.class)), ModelItem.class), HttpStatus.OK);
+        repositoryItem.save(objectMapper.treeToValue(patch.apply(objectMapper.convertValue(item, JsonNode.class)), ModelItem.class));
+
+        return new ResponseEntity<>("Patch OK.", HttpStatus.OK);
     }
 
     //========================================================================
@@ -149,12 +151,14 @@ public class ServiceItem {
         return new ResponseEntity<>("Delete OK.", HttpStatus.OK);
     }
 
-    public ResponseEntity<ModelItemAttribute> itemAttributePatch(JsonPatch patch, Integer itemAttributeID) throws JsonPatchException, JsonProcessingException {
+    public ResponseEntity<String> itemAttributePatch(JsonPatch patch, Integer itemAttributeID) throws JsonPatchException, JsonProcessingException {
         ModelItemAttribute itemAttribute = repositoryItemAttribute.findById(itemAttributeID).orElseThrow(RuntimeException::new);
 
         ObjectMapper objectMapper = new ObjectMapper();
 
-        return new ResponseEntity<>(objectMapper.treeToValue(patch.apply(objectMapper.convertValue(itemAttribute, JsonNode.class)), ModelItemAttribute.class), HttpStatus.OK);
+        repositoryItemAttribute.save(objectMapper.treeToValue(patch.apply(objectMapper.convertValue(itemAttribute, JsonNode.class)), ModelItemAttribute.class));
+
+        return new ResponseEntity<>("Patch OK.", HttpStatus.OK);
     }
 
     //========================================================================
@@ -193,11 +197,13 @@ public class ServiceItem {
         return new ResponseEntity<>("Delete OK.", HttpStatus.OK);
     }
 
-    public ResponseEntity<ModelItemCompany> itemCompanyPatch(JsonPatch patch, Integer itemCompanyID) throws JsonPatchException, JsonProcessingException {
+    public ResponseEntity<String> itemCompanyPatch(JsonPatch patch, Integer itemCompanyID) throws JsonPatchException, JsonProcessingException {
         ModelItemCompany itemCompany = repositoryItemCompany.findById(itemCompanyID).orElseThrow(RuntimeException::new);
 
         ObjectMapper objectMapper = new ObjectMapper();
 
-        return new ResponseEntity<>(objectMapper.treeToValue(patch.apply(objectMapper.convertValue(itemCompany, JsonNode.class)), ModelItemCompany.class), HttpStatus.OK);
+        repositoryItemCompany.save(objectMapper.treeToValue(patch.apply(objectMapper.convertValue(itemCompany, JsonNode.class)), ModelItemCompany.class));
+
+        return new ResponseEntity<>("Patch OK.", HttpStatus.OK);
     }
 }
