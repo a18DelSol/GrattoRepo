@@ -369,6 +369,8 @@ Un Contacto ("Contact") describe un contacto, que está asociado a una Compañí
   "contactMail": "adondevauncolor@mail.com",
   "contactCall": "1111-9999",
   "contactProvider": true,
+  "contactLocation": "Hurlingham",
+  "contactService": "Distribuidor de vino",
   "contactItem":
   [
     { "id" : 1 },

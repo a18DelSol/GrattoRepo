@@ -19,6 +19,8 @@ public class ModelContact {
     @NotBlank            private String  contactName;
     @NotNull             private String  contactMail;
     @NotNull             private String  contactCall;
+    @NotNull             private String  contactLocation;
+    @NotNull             private String  contactService;
     @NotNull             private Boolean contactProvider;
     @NotNull @ManyToMany private Set<ModelItem> contactItem;
     @NotNull @ManyToMany private Set<ModelItemCompany> contactCompany;
