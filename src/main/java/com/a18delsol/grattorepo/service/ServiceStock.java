@@ -109,7 +109,7 @@ public class ServiceStock {
         serviceHistory.historyCreate(String.format("[Listado] Creación (%s : %s [%s])",
                 historyStock.getStockName(),
                 historyItem.getItemName(),
-                historyItem.getItemCode()
+                historyItem.getItemSKU()
         ));
 
         return new ResponseEntity<>("Creation OK.", HttpStatus.OK);
@@ -123,7 +123,7 @@ public class ServiceStock {
         serviceHistory.historyCreate(String.format("[Listado] Eliminación (%s : %s [%s])",
                 stockEntry.getEntryStock().getStockName(),
                 stockEntry.getEntryItem().getItemName(),
-                stockEntry.getEntryItem().getItemCode()
+                stockEntry.getEntryItem().getItemSKU()
         ));
 
         return new ResponseEntity<>("Delete OK.", HttpStatus.OK);
@@ -157,7 +157,7 @@ public class ServiceStock {
         serviceHistory.historyCreate(String.format("[Listado] Actualización (%s : %s [%s], stock anterior: %d, stock actual: %d)",
                 stockEntry.getEntryStock().getStockName(),
                 stockEntry.getEntryItem().getItemName(),
-                stockEntry.getEntryItem().getItemCode(),
+                stockEntry.getEntryItem().getItemSKU(),
                 oldCount,
                 newCount
         ));
@@ -179,7 +179,7 @@ public class ServiceStock {
         serviceHistory.historyCreate(String.format("[Listado] Actualización (%s : %s [%s], precio anterior: %f, precio actual: %f)",
                 stockEntry.getEntryStock().getStockName(),
                 stockEntry.getEntryItem().getItemName(),
-                stockEntry.getEntryItem().getItemCode(),
+                stockEntry.getEntryItem().getItemSKU(),
                 oldPrice,
                 newPrice
         ));
@@ -243,7 +243,7 @@ public class ServiceStock {
             cell.setCellStyle(style);
 
             cell = row.createCell(1);
-            cell.setCellValue(e.getEntryItem().getItemCode());
+            cell.setCellValue(e.getEntryItem().getItemSKU());
             cell.setCellStyle(style);
 
             cell = row.createCell(2);

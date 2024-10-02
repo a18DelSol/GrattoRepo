@@ -23,6 +23,7 @@ public class ModelItem {
 
     @NotBlank            private String  itemName;
     @NotBlank            private String  itemCode;
+    @NotBlank            private String  itemSKU;
     @NotNull @Min(0)     private Integer itemCount;
     @NotNull @Min(0)     private Integer itemAlert;
     @NotNull @ManyToMany private Set<ModelItemAttribute> itemAttribute;

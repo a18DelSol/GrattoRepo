@@ -52,7 +52,7 @@ public class ServiceItem {
         repositoryItem.save(item);
         serviceHistory.historyCreate(String.format("[Producto] Creación (%s [%s])",
                 item.getItemName(),
-                item.getItemCode()
+                item.getItemSKU()
         ));
 
         return new ResponseEntity<>("Creation OK.", HttpStatus.OK);
@@ -74,7 +74,7 @@ public class ServiceItem {
 
         serviceHistory.historyCreate(String.format("[Producto] Eliminación (%s [%s])",
                 item.getItemName(),
-                item.getItemCode()
+                item.getItemSKU()
         ));
 
         return new ResponseEntity<>("Delete OK.", HttpStatus.OK);
@@ -112,7 +112,7 @@ public class ServiceItem {
         repositoryItem.save(item);
         serviceHistory.historyCreate(String.format("[Producto] Actualización (%s [%s], stock anterior: %d, stock actual: %d)",
                 item.getItemName(),
-                item.getItemCode(),
+                item.getItemSKU(),
                 oldCount,
                 newCount
         ));

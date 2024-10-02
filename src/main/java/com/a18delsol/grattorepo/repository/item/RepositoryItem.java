@@ -16,7 +16,7 @@ public interface RepositoryItem extends CrudRepository<ModelItem, Integer> {
     value="SELECT * FROM model_item"
     + " WHERE (entity_delete is false)"
     + " AND (:itemName is null OR item_name regexp :itemName)"
-    + " AND (:itemCode is null OR item_code regexp :itemCode)"
+    + " AND (:itemSKU is null OR item_code regexp :itemSKU)"
     + " AND (:itemCountMin is null OR item_count >= :itemCountMin)"
     + " AND (:itemCountMax is null OR item_count <= :itemCountMax)")
     Iterable<ModelItem> findItem(

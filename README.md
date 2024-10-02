@@ -118,6 +118,7 @@ Un Producto ("Item") es un producto que dispone de un nombre, un código SKU, un
 {
     "itemName": "Vino Malbec Trumpeter",
     "itemCode": "MAL-TRU",
+    "itemSKU": "1",
     "itemCount": 12,
     "itemAlert": 5,
     "itemAttribute":

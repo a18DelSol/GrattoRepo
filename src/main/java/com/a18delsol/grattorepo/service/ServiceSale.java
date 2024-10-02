@@ -153,7 +153,7 @@ public class ServiceSale {
             String cellName = "";
 
             for (ModelSaleOrder o : s.getSaleOrder()) {
-                String itemCode  = o.getOrderEntry().getEntryItem().getItemCode();
+                String itemCode  = o.getOrderEntry().getEntryItem().getItemSKU();
                 String stockName = o.getOrderEntry().getEntryStock().getStockName();
 
                 if (cellCode.isEmpty()) {
@@ -271,14 +271,14 @@ public class ServiceSale {
             if (alertCount) {
                 serviceAlert.alertCreate(String.format("[General] El producto %s (%s) tiene una baja cantidad de disponibilidad (cantidad actual: %d)",
                         entryItem.getItemName(),
-                        entryItem.getItemCode(),
+                        entryItem.getItemSKU(),
                         newCount));
             }
 
             if (alertEntry) {
                 serviceAlert.alertCreate(String.format("[Listado] El producto %s (%s) en la ubicación (%s) tiene una baja cantidad de disponibilidad (cantidad actual: %d)",
                         entryItem.getItemName(),
-                        entryItem.getItemCode(),
+                        entryItem.getItemSKU(),
                         stockEntry.getEntryStock().getStockName(),
                         newEntry));
             }
@@ -297,7 +297,7 @@ public class ServiceSale {
                     if (alertEntry) {
                         serviceAlert.alertCreate(String.format("[Listado] El producto %s (%s) en la ubicación (%s) tiene una baja cantidad de disponibilidad (cantidad actual: %d)",
                                 entryItem.getItemName(),
-                                entryItem.getItemCode(),
+                                entryItem.getItemSKU(),
                                 e.getEntryStock().getStockName(),
                                 newEntry));
                     }
